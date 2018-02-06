@@ -1,7 +1,9 @@
 ---
 title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
 subtitle: "Com o uso do R"
-author: "Luiz Fernando Palin Droubi"
+author: 
+- "Luiz Fernando Palin Droubi"
+- "Willian Zonato"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
   pdf_document: 
@@ -136,11 +138,13 @@ set.seed(1)
 
 O **R** possui uma série de funções para a geração randômica de variáveis, entre as quais destacamos a função `runif`, para geração de uma variável uniforme, `rnorm`, para geração de uma variável normal, `rbeta`, para geração de uma variável com distribuição beta e muitas outras (`rt`, `rchisq`, `rbinom`).
 
+\newpage
+
 ### Distribuição uniforme
 
 Abaixo mostramos como gerar 10^5 números aleatórios, armazenando-os na variável `v`, e criar um histograma desta variável comparada com a curva de distribuição teórica:
 
-```{r runif}
+```{r runif, fig.height=3, fig.width=4}
 v <- runif(10^5)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -151,7 +155,7 @@ curve(dunif(x),
 
 O mesmo procedimento pode ser feito para a distribuição normal, onde deve-se definir uma valor para a média (`mean = 10`) e o desvio-padrão (`sd = 2`) dos dados simulados.
 
-```{r rnorm}
+```{r rnorm, fig.height=3, fig.width=4}
 v <- rnorm(10^5, mean = 10, sd = 2)
 hist(v, freq = FALSE)
 curve(dnorm(x, mean = 10, sd = 2), 
@@ -162,7 +166,7 @@ curve(dnorm(x, mean = 10, sd = 2),
 
 Para a geração de variáveis com distribuição beta, basta informa os parâmetros de forma da mesma, através dos argumentos `shape1` e` shape2`:
 
-```{r rbeta1}
+```{r rbeta1, fig.height=3, fig.width=4}
 v <- rbeta(10^5, shape1 = 4, shape2 = 4)
 hist(v, freq = FALSE)
 curve(dbeta(x, 4, 4), 
@@ -171,7 +175,7 @@ curve(dbeta(x, 4, 4),
 
 No caso da distribuição beta a escolha dos parâmetros deve ser criteriosa, haja vista que a mesma pode assumir as mais diferentes formas. Por exemplo, a distribuição beta com parâmetros de forma iguais a 1 é equivalente à distribuição uniforme
 
-```{r rbeta2}
+```{r rbeta2, fig.height=3, fig.width=4}
 v <- rbeta(10^5, shape1 = 1, shape2 = 1)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -213,12 +217,12 @@ A matriz de covariância dos dados simulados pode ser verificada como exibimos a
 
 ```{r cov}
 kable(cov(bivn), 
+      digits = 3,
       format = ifelse(type == "html", "markdown", type),
       caption = "Matriz de correlação verificada", 
       booktabs = TRUE) %>%
   kable_styling(bootstrap_options = "striped", 
-                full_width = FALSE,
-                position = "float_left")
+                full_width = FALSE)
 ```
 
 Para simular `n` vairáveis aleatórias **dependentes**, basta fornecermos uma matriz `Sigma` simétrica com os termos fora das diagonais fornecendo o coeficiente de correlação entre elas. Por exemplo:
@@ -231,8 +235,7 @@ kable(S,
       booktabs = TRUE) %>%
   kable_styling(latex_options = "striped",
                 bootstrap_options = 'striped', 
-                full_width = FALSE,
-                position = "float_left")
+                full_width = FALSE)
 ```
 
 
