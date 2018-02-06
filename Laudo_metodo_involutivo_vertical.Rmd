@@ -1,19 +1,21 @@
 ---
 title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
+subtitle: "Com o uso do R"
 author: "Luiz Fernando Palin Droubi"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
+  pdf_document: 
+    fig_caption: yes
+    number_sections: yes
   html_document:
     df_print: paged
     keep_md: yes
-  pdf_document: 
-    fig_caption: yes
-    fig_height: 3
-    fig_width: 4.5
-    number_sections: yes
 header-includes: \usepackage[brazil]{babel} 
 bibliography: bibliography.bib
 csl: ABNT_UFPR_2011-Mendeley.csl
+link-citations: yes
+documentclass: article
+classoption: a4paper
 params:
   Nsim: 500
   ap_andar: 4
@@ -32,7 +34,7 @@ params:
   range_bdi_i: [90, 110]
   range_custos: [90, 110]
   range_tma: [1.2, 2.6]
-  range_Pgv: [90, 110]
+  range_vgv: [90, 110]
   rf_rate: 1.2
   taxa_risco: 0.7
   valor_venda: 7000.0
@@ -44,10 +46,22 @@ params:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, message = FALSE, warning = FALSE, 
-                      fig.ext='png', fig.align = "center", fig.path = "images/")
+                      fig.ext='png', fig.align = "center", fig.path = "images/",
+                      fig.pos = "h")
+type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+library(appraiseR)
+library(stargazer)
+library(knitr)
+library(pander)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(TeachBayes)
+library(LearnBayes)
+library(latex2exp)
+library(ggplot2)
+library(ggthemes)
 ```
-
-# Dados preliminares
 
 ```{r parametros, echo=FALSE}
 area_terreno <- params$area_terreno
@@ -74,8 +88,8 @@ range_custos <- params$range_custos/100
 names(range_custos) <- c("min", "max")
 range_bdi_c <- params$range_bdi_c/100
 names(range_bdi_c) <- c("min", "max")
-range_Pgv <- params$range_Pgv/100
-names(range_Pgv) <- c("min", "max")
+range_vgv <- params$range_vgv/100
+names(range_vgv) <- c("min", "max")
 range_bdi_i <- params$range_bdi_i/100
 names(range_bdi_i) <- c("min", "max")
 prior_dist <- params$prior_dist
@@ -85,19 +99,9 @@ Nsim <- params$Nsim
 ```
 
 ```{r pacotes, include=FALSE}
-library(appraiseR)
-library(stargazer)
-library(knitr)
-library(pander)
-library(kableExtra)
-library(dplyr)
-library(TeachBayes)
-library(latex2exp)
-library(ggplot2)
-library(ggthemes)
 theme_set(theme_economist())
 area_construida <- AREA_CONSTRUIDA(area_terreno, ia, pavs)
-Pgv <- area_construida*valor_venda
+vgv <- area_construida*valor_venda
 cc <- c_ref*cub*area_construida
 gcomma <- function(x) format(x, nsmall = 2, digits = 2, 
                              big.mark = ".", decimal.mark = ",", 
@@ -106,14 +110,200 @@ gcomma <- function(x) format(x, nsmall = 2, digits = 2,
 reais <- function(x) paste("R\\$ ", gcomma(x), sep = "")
 ```
 
+# Introdução
 
-Trata-se de avaliar pelo método involutivo um terreno com área de `r area_terreno`$m^2$, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é `r ia`), pode-se construir `r pavs*ap_andar` apartamentos com área total de `r area_construida/(pavs*ap_andar)`$m^2$ cada um, num prédio de `r pavs+1` pisos (`r pavs` + 1). 
+Este artigo tem por objetivo introduzir ao leitor o método involutivo vertical com o auxílio da ferramenta estatística **R** versão `r paste(R.version$major, R.version$minor, sep = ".")` para efetuar simulações de Monte Carlo.
 
-## Previsão de Receitas ou Produto Geral de Vendas (Pgv) e velocidade de vendas
+Este artigo em conjunto com todos os seus códigos encontra-se disponível online[^1]. O relatório foi parametrizado de modo que qualquer pessoa pode alterar os parâmetros iniciais para fazer avaliações pelo método involutivo utilizando Simulação de Monte Carlo.
+
+Para termos de *benchmark*, foi reproduzido o exemplo obtido em [@hoccheim2, p.65-68].
+
+# Revisão bibliográfica
+
+## Geração de variáveis (pseudo) aleatórias univariadas
+
+### Semente
+
+A utilização de algoritmos geradores de números pseudo-aleatórios, i.e, números gerados de acordo com um algoritmo que, partindo de um determinada semente (ou ponto inicial), sempre irá gerar os mesmos números aleatórios, permite a reproducibilidade da análise feita pelo pesquisador, conferindo assim uma maior credibilidade ao trabalho apresentado, haja vista que este pode ter seu código divulgado e reproduzido por quem deseje, dando inclusive a possibilidade de terceiros proporem alterações no algoritmo de forma a obter outros resultados.
+
+Por isto este trabalho encontra-se hospedado em um repositório `git`, onde pode ser acessado e lido (através do arquivo `artigo.md`), podem ser feitas  recomendações de melhorias ou alterações no código por quem quer que seja, através da aba [Pull requests](https://github.com/lfpdroubi/involutivo_vertical/pulls), que posteriormente podem ser aceitas ou descartadas pelo administrador do repositório, ou comunicados problemas técnicos com o algoritmo, através da comunicação de problemas pela aba [Issues](https://github.com/lfpdroubi/involutivo_vertical/issues), além de diversas outras funcionalidades.
+
+[^1]: [https://github.com/lfpdroubi/involutivo_vertical](https://github.com/lfpdroubi/involutivo_vertical)
+
+```{r semente}
+set.seed(1)
+```
+
+O **R** possui uma série de funções para a geração randômica de variáveis, entre as quais destacamos a função `runif`, para geração de uma variável uniforme, `rnorm`, para geração de uma variável normal, `rbeta`, para geração de uma variável com distribuição beta e muitas outras (`rt`, `rchisq`, `rbinom`).
+
+### Distribuição uniforme
+
+Abaixo mostramos como gerar 10^5 números aleatórios, armazenando-os na variável `v`, e criar um histograma desta variável comparada com a curva de distribuição teórica:
+
+```{r runif}
+v <- runif(10^5)
+hist(v, freq = FALSE)
+curve(dunif(x),
+          col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+
+### Distribuição normal
+
+O mesmo procedimento pode ser feito para a distribuição normal, onde deve-se definir uma valor para a média (`mean = 10`) e o desvio-padrão (`sd = 2`) dos dados simulados.
+
+```{r rnorm}
+v <- rnorm(10^5, mean = 10, sd = 2)
+hist(v, freq = FALSE)
+curve(dnorm(x, mean = 10, sd = 2), 
+          col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+
+### Distribuição beta
+
+Para a geração de variáveis com distribuição beta, basta informa os parâmetros de forma da mesma, através dos argumentos `shape1` e` shape2`:
+
+```{r rbeta1}
+v <- rbeta(10^5, shape1 = 4, shape2 = 4)
+hist(v, freq = FALSE)
+curve(dbeta(x, 4, 4), 
+          col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+
+No caso da distribuição beta a escolha dos parâmetros deve ser criteriosa, haja vista que a mesma pode assumir as mais diferentes formas. Por exemplo, a distribuição beta com parâmetros de forma iguais a 1 é equivalente à distribuição uniforme
+
+```{r rbeta2}
+v <- rbeta(10^5, shape1 = 1, shape2 = 1)
+hist(v, freq = FALSE)
+curve(dunif(x),
+          col="darkblue", lwd=2, add=TRUE, yaxt="n")
+```
+
+## Geração de variáveis aleatórias multivariadas
+
+### Distribuição normal multivariada
+
+Abaixo demonstramos com simular `n` variáveis aleatórias **independentes** de uma distribuição normal multivariada, assim como obter seus gráficos tridimensionais. Para as simulações podem ser utilizadas a função `mvrnorm`, disponível dentro do pacote `MASS`[-@MASS].
+
+```{r mvrnorm, fig.show='hold'}
+library(MASS)
+# Geração
+bivn <- mvrnorm(10^5, mu = c(0, 0), Sigma = diag(2))
+
+# Gráficos
+par(mfrow = c(2, 3))
+# now we do a kernel density estimate
+bivn.kde <- kde2d(bivn[,1], bivn[,2], n = 50)
+
+# now plot your results
+contour(bivn.kde)
+image(bivn.kde)
+
+# fancy contour with image
+image(bivn.kde); contour(bivn.kde, add = T)
+
+# fancy perspectives
+persp(bivn.kde, phi = 45, theta = 30)
+persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
+
+```
+
+A independência das variáveis foi estabelecida acima através do argumento `Sigma` da função `mvrnorm`, onde estabelecemos uma matriz diagonal de duas dimensões (`diag(2)`).
+
+A matriz de covariância dos dados simulados pode ser verificada como exibimos abaixo:
+
+```{r cov}
+kable(cov(bivn), 
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Matriz de correlação verificada", 
+      booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE,
+                position = "float_left")
+```
+
+Para simular `n` vairáveis aleatórias **dependentes**, basta fornecermos uma matriz `Sigma` simétrica com os termos fora das diagonais fornecendo o coeficiente de correlação entre elas. Por exemplo:
+
+```{r simcor, echo = FALSE}
+S <- matrix(c(1, 0.5, 0.5, 1), nrow = 2, dimnames = list(c("V1", "V2"), c("V1", "V2")))
+kable(S, 
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Matriz de correlação desejada entre as variáveis aleatórias", 
+      booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped",
+                bootstrap_options = 'striped', 
+                full_width = FALSE,
+                position = "float_left")
+```
+
+
+```{r mvnormdep, fig.show='hold'}
+# Geração
+bivn <- mvrnorm(10^5, mu = c(0, 0), Sigma =  S)
+
+# Gráficos
+par(mfrow = c(2, 3))
+# now we do a kernel density estimate
+bivn.kde <- kde2d(bivn[,1], bivn[,2], n = 50)
+
+# now plot your results
+contour(bivn.kde)
+image(bivn.kde)
+
+# fancy contour with image
+image(bivn.kde); contour(bivn.kde, add = T)
+
+# fancy perspectives
+persp(bivn.kde, phi = 45, theta = 30)
+persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
+```
+
+
+### Distribuição de Dirichlet
+
+A simulação de dados multivariados da distribuição de Dirichlet, que é uma versão generalização multivariada da distribuição beta, pode ser feita através da função `rdirichlet`, do pacote `LearnBayes`[@LearnBayes]:
+
+```{r dirichlet}
+# Geração
+m <- rdirichlet(10^2, par = c(1, 1))
+dir.kde <- kde2d(m[,1], m[,2], n = 50)
+
+# Gráficos
+par(mfrow = c(2, 3))
+# now plot your results
+contour(dir.kde)
+image(dir.kde)
+persp(dir.kde, phi = 45, theta = 30)
+
+# fancy contour with image
+image(dir.kde); contour(dir.kde, add = T)
+
+# fancy perspective
+persp(dir.kde, phi = 45, theta = 30, shade = .1, border = NA)
+```
+
+### Simulação de variáveis aleatórias dependentes usando Copulas
+
+Para a simulação de variáveis dependentes de quaisquer distribuições, a utilização do Método Copulas é interessante. Há alguns pacotes que implementam este método, como o pacote `simstudy`[@simstudy][^2]. Mas o método também pode ser facilmente implementado com as funções básicas apresentadas até aqui[^3].
+
+O método consiste em primeiramente gerar `n` variaveis aleatórias dependentes com a função normal multivariada, transformar estas variáveis brutas em `n` vetores de probabilidades normal através da função `pnorm` e finalmente transformar estes vetores de probabilidades normais em vetores de quantis da distribuição desejada.
+
+Uma versão personalizada deste método com foco na aplicação do Método de Monte Carlo à avaliação de imóveis pelo método involutivo foi elaborada por este autor e encontra-se disponível através da função `vpl_sim` do pacote `appraiseR`[^4][@appraiseR].
+
+[^2]: Ver [https://www.rdatagen.net/post/correlated-data-copula/](https://www.rdatagen.net/post/correlated-data-copula/)
+[^3]: Ver [http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html](http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html)
+[^4]: Ver [https://github.com/lfpdroubi/appraiseR](https://github.com/lfpdroubi/appraiseR)
+
+# Estudo de Caso
+
+## Dados Preliminares
+
+Trata-se de avaliar pelo método involutivo um terreno com área de `r area_terreno` m^2, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é `r ia`), pode-se construir `r pavs*ap_andar` apartamentos com área total de `r area_construida/(pavs*ap_andar)` m^2 cada um, num prédio de `r pavs+1` pisos (`r pavs` + 1). 
+
+## Previsão de Receitas ou Valor Global de Vendas (VGV) e velocidade de vendas
 
 O Produto Geral de Vendas (Pgv) ou Valor Global de Vendas (VGV) é o Produto de vendas total do empreendimento hipotético.
 
-O preço de venda praticado pelo mercado na região do imóvel é de `r reais(valor_venda)`/$m^2$, o que gera um Pgv de `r reais(Pgv)`. 
+O preço de venda praticado pelo mercado na região do imóvel é de `r reais(valor_venda)`/ m^2, o que gera um vgv de `r reais(vgv)`. 
 
 Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 
@@ -121,12 +311,14 @@ Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 WV <- data.frame(Periodo = 0:(length(wv)-1), 
                  Vendas = paste(100*wv, "%", sep = "")
                  )
-knitr::kable(t(WV))
+kable(t(WV), booktabs = TRUE, longtable = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
 ## Custos de Construção e Cronograma Financeiro
 
-Estima-se que o custo de construção seja `r 100*c_ref`\% do CUB R8N, que no momento é de `r reais(cub)`/$m^2$, de maneira então que o custo de referência será de `r reais(1.2*cub)`/$m^2$, totalizando `r reais(cc)`. 
+Estima-se que o custo de construção seja `r 100*c_ref`\% do CUB R8N, que no momento é de `r reais(cub)`/ m^2, de maneira então que o custo de referência será de `r reais(1.2*cub)`/ m^2, totalizando `r reais(cc)`. 
 
 O cronograma financeiro da construção foi estimado bimestralmente como mostrado a baixo:
 
@@ -134,27 +326,33 @@ O cronograma financeiro da construção foi estimado bimestralmente como mostrad
 WC <- data.frame(Periodo = 0:(length(wc)-1), 
                  Custos = paste(100*wc, "%", sep = "")
                  )
-knitr::kable(t(WC))
+kable(t(WC), 
+      format = ifelse(type == "html", "markdown", type), 
+      booktabs = TRUE)
 ```
 
 ## Taxa mínima de atratividade (TMA)
 
 A taxa mínima de atratividade do empreendimento foi calculada levando em consideração a taxa livre de risco do mercado, atualmente em `r gcomma(100*rf_rate)`\% `r periodo` e a taxa de risco do empreendimento, adotada `r gcomma(100*taxa_risco)`\% `r periodo`, resultando numa TMA de `r gcomma(100*tma)`\% `r periodo`.
 
-# Fluxo de Caixa Provável do Empreendimento
+## Fluxo de Caixa Provável do Empreendimento
 
 O Fluxo de Caixa do Empreendimento pode ser visto abaixo:
 
 ```{r FC, echo = FALSE, results = 'asis'}
 fci_provavel <- FCI(cc = cc, wc = wc, bdi_c = bdi_c)
-fcv_provavel <- FCV(vgv = Pgv, wv = wv)
-kable(FC(fcv_provavel, fci_provavel, bdi_i = bdi_i, cor = cor, tma = tma), digits = 2,
+fcv_provavel <- FCV(vgv = vgv, wv = wv)
+kable(FC(fcv_provavel, fci_provavel, bdi_i = bdi_i, cor = cor, tma = tma), 
+      format = ifelse(type == "html", "markdown", type),
+      digits = 2,
       caption = "Tabela de Fluxo de Caixa do Emprendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = c("striped", "scale_down"), 
+                bootstrap_options = "striped")
 ```
 
-# Valor Presente Líquido (VPL) Provável
+## Valor Presente Líquido (VPL) Provável
 
 ```{r VPL, echo = FALSE, message = FALSE}
 vpl <- VPL(FCL(fcv_provavel, fci_provavel, bdi_i, cor), tma)
@@ -162,84 +360,104 @@ vpl <- VPL(FCL(fcv_provavel, fci_provavel, bdi_i, cor), tma)
 
 De acordo com o observado no fluxo de caixa acima, o VPL do empreendimento é a soma da coluna do Fluxo de Caixa Líquido descontado -- da taxa de juros mínima de atratividade, ou seja, o VPL é **`r reais(vpl)`**. 
 
-# Análises de Sensibilidade
+## Análises de Sensibilidade
 
-## Sensibilidade em relação à taxa mínima de atratividade
+### Sensibilidade em relação à taxa mínima de atratividade
 
 Em relação à taxa mínima de atratividade (TMA), a consideraremos variando entre o valor mínimo de `r gcomma(100*range_tma["min"])`\% `r periodo` para o cenário otimista e o valor máximo de `r gcomma(100*range_tma["max"])`\% `r periodo`, no cenário pessimista.
 
 ```{r s_tma, echo=FALSE, message=FALSE}
 fcl_provavel <- FCL(fcv_provavel, fci_provavel, bdi_i, cor)
 s_tma <- sensibilidade_tma(range_tma, fcl_provavel)
-kable(s_tma, digits = 3,
+kable(s_tma,  
+      format = ifelse(type == "html", "markdown", type),
+      digits = 3,
       caption = "Sensibilidade do VPL à variação da TMA", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
-## Sensibilidade em relação ao custo de construção do empreendimento
+### Sensibilidade em relação ao custo de construção do empreendimento
 
 Em relação ao custo do empreendimento, consideraremos uma variação no custo de construção (antes do BDI do construtor) entre `r 100*range_custos["min"]`\% e `r 100*range_custos["max"]`\% do custo provável.
 
 ```{r s_custo, echo = FALSE, message = FALSE}
 s_custo <- sensibilidade_custo(range = range_custos,
                                cc = cc, wc = wc,
-                               vgv = Pgv, wv = wv,
+                               vgv = vgv, wv = wv,
                                bdi_i = bdi_i, bdi_c = bdi_c,
                                cor = cor, tma = tma)
-kable(s_custo, digits = 2,
+kable(s_custo, 
+      format = ifelse(type == "html", "markdown", type), 
+      digits = 2,
       caption = "Sensibilidade do VPL à variação do Custo de Construção", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
-## Sensibilidade em relação ao BDI do Construtor
+### Sensibilidade em relação ao BDI do Construtor
 
 Em relação ao BDI do Construtor, consideraremos uma variação entre `r 100*range_bdi_c["min"]`\% e `r 100*range_bdi_c["max"]`\% do BDI provável.
 
 ```{r s_bdi_c, echo = FALSE, message = FALSE}
 s_bdi_c <- sensibilidade_bdi_c(range = range_bdi_c,
                                cc = cc, wc = wc,
-                               vgv = Pgv, wv = wv,
+                               vgv = vgv, wv = wv,
                                bdi_i = bdi_i, bdi_c = bdi_c,
                                cor = cor, tma = tma)
-kable(s_bdi_c, digits = 2,
+kable(s_bdi_c,  
+      format = ifelse(type == "html", "markdown", type),
+      digits = 2,
       caption = "Sensibilidade do VPL à variação do BDI do Construtor", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )      
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
-## Sensibilidade em relação ao valor de venda do empreendimento
+### Sensibilidade em relação ao valor de venda do empreendimento
 
-Em relação às vendas, consideraremos uma variação entre `r 100*range_Pgv["min"]`\% e `r 100*range_Pgv["max"]`\% do Pgv provável.
+Em relação às vendas, consideraremos uma variação entre `r 100*range_vgv["min"]`\% e `r 100*range_vgv["max"]`\% do vgv provável.
 
-```{r s_Pgv, echo = FALSE, message = FALSE}
-s_Pgv <- sensibilidade_venda(range = range_Pgv,
+```{r s_vgv, echo = FALSE, message = FALSE}
+s_vgv <- sensibilidade_venda(range = range_vgv,
                                cc = cc, wc = wc,
-                               vgv = Pgv, wv = wv,
+                               vgv = vgv, wv = wv,
                                bdi_i = bdi_i, bdi_c = bdi_c,
                                cor = cor, tma = tma)
-kable(s_Pgv, digits = 2,
-      caption = "Sensibilidade do VPL à variação do Pgv", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )      
+kable(s_vgv,  
+      format = ifelse(type == "html", "markdown", type),
+      digits = 2,
+      caption = "Sensibilidade do VPL à variação do VGV", 
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")      
 ```
 
 
-## Sensibilidade em relação ao BDI do Incorporador
+### Sensibilidade em relação ao BDI do Incorporador
 
 Em relação ao BDI do Incorporador, consideraremos uma variação entre `r 100*range_bdi_i["min"]`~\% e `r 100*range_bdi_i["max"]`\% do BDI provável.
 
 ```{r s_bdi_i, echo = FALSE, message = FALSE}
 s_bdi_i <- sensibilidade_bdi_i(range = range_bdi_i,
                                 cc = cc, wc = wc,
-                                vgv = Pgv, wv = wv,
+                                vgv = vgv, wv = wv,
                                 bdi_i = bdi_i, bdi_c = bdi_c,
                                 cor = cor, tma = tma)
-kable(s_bdi_i, digits = 2,
+kable(s_bdi_i, 
+      format = ifelse(type == "html", "markdown", type),
+      digits = 2,
       caption = "Sensibilidade do VPL à variação do BDI do Incorporador", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )      
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>% 
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")     
 ```
 
 ## Sensibilidade em relação à velocidade de vendas do empreendimento
@@ -249,7 +467,9 @@ Quanto à velocidade de vendas, consideraremos que as vendas podem ser feitas, n
 ```{r wv_pessimista, echo = FALSE}
 WV_pessimista <- data.frame(Periodo = 0:(length(wv_pessimista)-1), 
                             Vendas = paste(100*wv_pessimista, "%", sep = ""))
-pander(t(WV_pessimista), split.table = 80) 
+pander(t(WV_pessimista),
+       caption = "Velocidade de Vendas -- Cenário Pessimista",       
+       split.table = 80) 
 ```
 
 Já para o cenário otimista em relação à velocidade de vendas, foi considerada a seguinte hipótese:
@@ -257,23 +477,30 @@ Já para o cenário otimista em relação à velocidade de vendas, foi considera
 ```{r wv_otimista, echo = FALSE}
 WV_otimista <- data.frame(Periodo = 0:(length(wv_otimista)-1), 
                             Vendas = paste(100*wv_otimista, "%", sep = ""))
-kable(t(WV_otimista))
+kable(t(WV_otimista),
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Velocidade de Vendas -- Cenário Otimsta",
+      booktabs = TRUE) 
 ```
 
 ```{r s_vv, echo = FALSE, message = FALSE}
 range_vv <- list(Pessimista = wv_pessimista, Provavel = wv, Otimista = wv_otimista)
 s_vv <- sensibilidade_vv(range_vv,
                          cc = cc, wc = wc,
-                         vgv = Pgv,
+                         vgv = vgv,
                          bdi_i = bdi_i, bdi_c = bdi_c,
                          cor = cor, tma = tma)
-kable(s_vv, digits = 2,
+kable(s_vv, 
+      format = ifelse(type == "html", "markdown", type),
+      digits = 2,
       caption = "Sensibilidade do VPL à variação da velocidade de vendas do Empreendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")  
 ```
 
-## Análise gráfica de sensibilidade
+### Análise gráfica de sensibilidade
 
 Na figura abaixo são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
 
@@ -281,7 +508,7 @@ Na figura abaixo são mostrados os gráficos para as análises de sensibilidade 
 join_tbl <-
   s_tma %>%
   full_join(s_custo) %>%
-  full_join(s_Pgv) %>%
+  full_join(s_vgv) %>%
   full_join(s_bdi_i) %>%
   full_join(s_bdi_c) %>%
   full_join(s_vv)
@@ -307,7 +534,7 @@ p3 <- ggplot(join_tbl, aes(x = Vendas/div, y = VPL/div)) +
   scale_x_continuous(labels = gcomma) + 
   scale_y_continuous(labels = gcomma) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) +
-  labs(x = "Pgv (milhares de R$)", y = "VPL (R$ x 1.000)")
+  labs(x = "vgv (milhares de R$)", y = "VPL (R$ x 1.000)")
 
 p4 <- ggplot(join_tbl, aes(x = BDI_Incorporador, y = VPL/div)) + 
   geom_point() + geom_line() + 
@@ -335,45 +562,55 @@ cowplot::plot_grid(p1, p4, p5, p2, p3, p6, labels = c("A", "B", "C", "D", "E", "
 
 Com os gráficos alinhados, e todos com os mesmos limites de escala em relação ao VPL, é fácil perceber a maior ou menor influência das diferentes variáveis na composição final do VPL.
 
-Nota-se que, para esta análise, a variação do Pgv -- ou melhor, uma variação no valor unitário de venda -- tem um maior impacto
+Nota-se que, para esta análise, a variação do VGV -- ou melhor, uma variação no valor unitário de venda -- tem um maior impacto
 
-# Análise de Cenários
+## Análise de Cenários
 
 Foram analisados três cenários: o pessimista, o mais provável e o otimista.
 
 Para cada cenário foi calculado um Fluxo de Caixa de Vendas, um Fluxo de Caixa de Investimentos e um Fluxo de Caixa Líquido, de onde foram obtidos os VPL's para cada cenário.
 
-## Cenário Pessimista
+### Cenário Pessimista
 
-No cenário pessimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de `r 100*range_Pgv["min"]`\%  do Pgv Provável, em conjunto com o fluxo de vendas pessimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de `r 100*range_custos["max"]`\% do Custo de Construção Provável e com BDI do Construtor com valor de `r 100*range_bdi_c["max"]`\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de `r 100*range_bdi_i["max"]`\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de `r 100*range_tma["max"]`\%.
+No cenário pessimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de `r 100*range_vgv["min"]`\%  do VGV Provável, em conjunto com o fluxo de vendas pessimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de `r 100*range_custos["max"]`\% do Custo de Construção Provável e com BDI do Construtor com valor de `r 100*range_bdi_c["max"]`\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de `r 100*range_bdi_i["max"]`\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de `r 100*range_tma["max"]`\%.
 
 ```{r pessimista, echo = FALSE, message =  FALSE}
-fcv_pessimista <- FCV(range_Pgv["min"]*Pgv, w = wv_pessimista)
+fcv_pessimista <- FCV(range_vgv["min"]*vgv, w = wv_pessimista)
 fci_pessimista <- FCI(range_custos["max"]*cc, w = wc, bdi_c = range_bdi_c["max"]*bdi_c)
 FC_pessimista <- FC(fcv_pessimista, fci_pessimista, range_bdi_i["max"]*bdi_i, cor = cor, tma = range_tma["max"])
-kable(FC_pessimista, caption = "Fluxo de Caixa pessimista do Empreendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+kable(FC_pessimista, 
+      digits = c(rep(0, 6), 2, 0),
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Fluxo de Caixa pessimista do Empreendimento", 
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped",
+                full_width = TRUE)  
 ```
 
-## Cenário Provável
+### Cenário Provável
 
 Os resultados para o cenário provável podem ser encontrados em [Fluxo de Caixa Provável do Empreendimento].
 
-## Cenário Otimista
+### Cenário Otimista
 
-No cenário otimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de `r 100*range_Pgv["max"]`\% do Pgv Provável, em conjunto com o fluxo de vendas otimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de `r 100*range_custos["min"]`\% do Custo de Construção Provável e com BDI do Construtor com valor de `r 100*range_bdi_c["min"]`\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de `r 100*range_bdi_i["min"]`\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de `r 100*range_tma["min"]`\%.
+No cenário otimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de `r 100*range_vgv["max"]`\% do VGV Provável, em conjunto com o fluxo de vendas otimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de `r 100*range_custos["min"]`\% do Custo de Construção Provável e com BDI do Construtor com valor de `r 100*range_bdi_c["min"]`\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de `r 100*range_bdi_i["min"]`\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de `r 100*range_tma["min"]`\%.
 
 ```{r otimista, echo = FALSE, message = FALSE}
-fcv_otimista <- FCV(range_Pgv["max"]*Pgv, w = wv_otimista)
+fcv_otimista <- FCV(range_vgv["max"]*vgv, w = wv_otimista)
 fci_otimista <- FCI(range_custos["min"]*cc, w = wc, bdi_c = range_bdi_c["min"]*bdi_c)
 FC_otimista <- FC(fcv_otimista, fci_otimista, range_bdi_i["min"]*bdi_i, cor = cor, tma = range_tma["min"])
-kable(FC_otimista, caption = "Fluxo de Caixa otimista do Empreendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ",")
-      )
+kable(FC_otimista, 
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Fluxo de Caixa otimista do Empreendimento", 
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
-## Valor Presente Líquido dos diversos cenários
+### Valor Presente Líquido dos diversos cenários
 
 ```{r cenarios}
 vpl_pessimista <- sum(FC_pessimista$FCL_descontado)
@@ -382,23 +619,27 @@ vpl_otimista <- sum(FC_otimista$FCL_descontado)
 
 O VPL para o cenário mais pessimista é de **`r reais(vpl_pessimista)`** e para o cenário mais otimista, de **`r reais(vpl_otimista)`**.
 
-# Simulações
+## Simulações
 
 ```{r rangesandvariables}
-ranges <- list(vgv = range_Pgv, cc = range_custos, bdi_i = range_bdi_i, bdi_c = range_bdi_c)
-variables <- list(vgv = Pgv, wv = wv, cc = cc, wc = wc, bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, tma = tma)
+ranges <- list(vgv = range_vgv, 
+               cc = range_custos, 
+               bdi_i = range_bdi_i, 
+               bdi_c = range_bdi_c)
+variables <- list(vgv = vgv, wv = wv, cc = cc, wc = wc, bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, tma = tma)
 ```
-## Simulação de Monte Carlo com distribuição uniforme
+
+### Simulação de Monte Carlo com distribuição uniforme
 
 Foram realizadas `r Nsim` simulações com a distribuição uniforme, utilizando-se como variáveis aleatórias o Valor Global de Vendas, o Custo de Construção, o BDI do Construtor e o BDI do Incorporador. As demais variáveis (Velocidade de Vendas, Cronograma de Desembolsos da Construção, Corretagens e Taxa Mínima de Atratividade) foram consideradas fixas, com os valores prováveis já mencionados anteriormente. Foram consideradas três diferentes hipóteses em relação à dependência (ou correlação) entre as variáveis: dependência total, dependência parcial e independência total entre as variáveis aleatórias.
 
-### A distribuição uniforme
+#### A distribuição uniforme
 
 A distribuição uniforme é a mais simples distribuição contínua. Tem como característica ter probabilidades de ocorrência igual para todo o intervalo em que ela é definida.
 
 É muito utilizada na inferência Bayesiana como distribuição a priori, quando não se tem motivos ou dados para se acreditar que uma população tenha uma distribuição diferente da uniforme. Como a distribuição uniforme não penaliza nem prioriza quaisquer valores dentro de um intervalo, ela é considerada a melhor distribuição a priori quando não se sabe como uma variável se comporta dentro deste intervalo. Posteriormente, com a realização de pesquisas, pode-se encontrar uma distribuição diferente da uniforme para a distribuição a posteriori.
 
-### Variáveis totalmente dependentes
+#### Variáveis totalmente dependentes
 
 A simulação da dependência total das variáveis pode ser feita através da construção de uma matriz de correlação como vista abaixo:
 
@@ -411,11 +652,14 @@ dependencia100 <- matrix(data = c(1, -1, -1, -1,
                          byrow = TRUE, 
                          dimnames = list(names(ranges), names(ranges))
                          )
-kable(dependencia100)
+kable(dependencia100,
+      format = ifelse(type == "html", "markdown", type),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
 ```{r unif100, }
-set.seed(1)
 vpl_unif100 <- vpl_sim(Nsim, ranges = ranges, variables = variables, 
                        distribution = "uniform", dependencia = dependencia100)
 m_unif100 <- mean(vpl_unif100$vpl)
@@ -436,7 +680,7 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 pnorm(0.85*mean(vpl_unif100$vpl), mean = mean(vpl_unif100$vpl), sd = sd(vpl_unif100$vpl))
 ```
 
-### Variáveis parcialmente (50%) dependentes
+#### Variáveis parcialmente (50%) dependentes
 
 Para simular a dependência parcial das variáveis foi montada uma matriz de correlação como abaixo:
 
@@ -448,7 +692,11 @@ dependencia50 <- matrix(data = c(1, -.5, -.5, -.5,
                         nrow = 4, 
                         byrow = TRUE, 
                         dimnames = list(names(ranges), names(ranges)))
-kable(dependencia50)
+kable(dependencia50,
+      format = ifelse(type == "html", "markdown", type),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
 ```{r unif50}
@@ -472,14 +720,18 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 pnorm(0.85*mean(vpl_unif50$vpl), mean = mean(vpl_unif50$vpl), sd = sd(vpl_unif50$vpl))
 ```
 
-### Variáveis totalmente independentes 
+#### Variáveis totalmente independentes 
 
 Para a simulação com variáveis totalmente independentes, constrói-se uma matriz diagonal de correlação, como pode ser vista abaixo:
 
 ```{r unif_matrix, echo=FALSE}
 dependencia0 <- diag(4)
 dimnames(dependencia0) <- list(names(ranges), names(ranges))
-kable(dependencia0)
+kable(dependencia0,
+      format = ifelse(type == "html", "markdown", type),
+      booktabs = TRUE)  %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped")
 ```
 
 ```{r unif, echo = FALSE}
@@ -501,7 +753,8 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 ```{r p85teorica3}
 pnorm(0.85*mean(vpl_unif$vpl), mean = mean(vpl_unif$vpl), sd = sd(vpl_unif$vpl))
 ```
-### Gráficos
+
+#### Gráficos
 
 ```{r histogramasuniforme, echo=FALSE, fig.width = 6, fig.height = 8}
 p1_unif <- ggplot(as.data.frame(vpl_unif100), aes(vpl)) + 
@@ -529,11 +782,11 @@ cowplot::plot_grid(p1_unif, p2_unif, p3_unif, ncol = 1)
 ```
 
 
-## Simulação de Monte Carlo com distribuição beta
+### Simulação de Monte Carlo com distribuição beta
 
 Da mesma maneira explicada na seção anterior, realizamos `r Nsim` simulações com a distribuição beta. Neste caso, adotamos como parâmetros da distribuição beta os fatores $\alpha$ e $\beta$ iguais a `r p_beta["shape1"]` e `r p_beta["shape2"]`, respectivamente.
 
-### A distribuição beta
+#### A distribuição beta
 
 A distribuição beta está definida no intervalo (0,1) e pode assumir diferentes formas dentro deste intervalo, motivo pelo qual a distribuição beta é um modelo conveniente para prever o comportamento aleatório de porcentagens e proporções. Dependendo dos fatores de forma $\alpha$ e $\beta$ adotados. Quando os valor de $\alpha$ e $\beta$ são simultaneamente iguais a 1, a distribuição beta toma a forma da distribuição uniforme no intervalo (0,1). Mas a distribuição beta pode tomar uma variedade de formas para outros valores de $\alpha$ e $\beta$, alguns dos quais podem ser vistos abaixo:
 
@@ -585,7 +838,7 @@ beta_prior_post(prior_par, post_par)
 
 Este processo pode ser repetido continuamente, com a distribuição a posteriori tornando-se a nova distribuição a priori e realizando-se nova pesquisa.
 
-### Dependência Total
+#### Dependência Total
 
 ```{r beta2_100, echo = FALSE}
 parametros_beta2 <- list(vgv = p_beta, cc = p_beta, bdi_i = p_beta, bdi_c = p_beta)
@@ -607,7 +860,7 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 pnorm(0.85*mean(vpl_beta2_100$vpl), mean = mean(vpl_beta2_100$vpl), sd = sd(vpl_beta2_100$vpl))
 ```
 
-### Dependência Parcial
+#### Dependência Parcial
 
 ```{r beta2_50, echo = FALSE}
 vpl_beta2_50 <- vpl_sim(Nsim, ranges = ranges, variables = variables, distribution = "beta", 
@@ -628,7 +881,7 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), sd = sd(vpl_beta2_50$vpl))
 ```
 
-### Independência Total
+#### Independência Total
 
 ```{r beta2, echo = FALSE}
 vpl_beta2 <- vpl_sim(Nsim, ranges = ranges, variables = variables, distribution = "beta", 
@@ -648,7 +901,8 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 ```{r p85teorica6}
 pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vpl))
 ```
-### Gráficos
+
+#### Gráficos
 
 ```{r histogramasbeta, echo=FALSE, fig.width = 6, fig.height = 8}
 p1_beta2 <- ggplot(as.data.frame(vpl_beta2_100), aes(vpl)) + 
@@ -675,7 +929,7 @@ p3_beta2 <- ggplot(as.data.frame(vpl_beta2), aes(vpl)) +
 cowplot::plot_grid(p1_beta2, p2_beta2, p3_beta2, ncol = 1)
 ```
 
-## Mudança de parâmetros da distribuição beta
+#### Mudança de parâmetros da distribuição beta
 
 No entanto, não há motivos para supor que as variáveis aleatórias assumam uma distribuição beta com os parâmetros descritos na seção anterior.
 
@@ -712,7 +966,7 @@ ggplot(vpl_beta7, aes(vpl)) +
 ```
 
 
-# Estatísticas descritivas
+## Estatísticas descritivas
 
 ```{r estat_descr, results = "asis", echo = FALSE}
 s_unif_100 <- summary(vpl_unif100$vpl)
@@ -723,8 +977,14 @@ s_beta2_50 <- summary(vpl_beta2_50$vpl)
 s_beta2 <- summary(vpl_beta2$vpl)
 s_beta7 <- summary(vpl_beta7$vpl)
 s <- rbind(s_unif_100, s_unif_50, s_unif, s_beta2_100, s_beta2_50, s_beta2, s_beta7)
-kable(s, caption = "Estatísticas descritivas das diferentes simulações", 
-      format.args = list(big.mark = ".", decimal.mark = ","))
+kable(s,
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Estatísticas descritivas das diferentes simulações", 
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped") 
+
 ```
 
 ```{r resumo, echo = FALSE}
@@ -733,8 +993,13 @@ descr <- data.frame(Distribuição = c(rep("Uniforme", 3), rep("Beta", 4)),
                     Média = c(m_unif100, m_unif50, m_unif, m_beta2_100, m_beta2_50, m_beta2, m_beta7), 
                     Desvio_Padrão = c(std_unif100, std_unif50, std_unif, std_beta2_100, std_beta2_50, std_beta2, std_beta7)
                     )
-kable(descr, caption = "Resumo das médias e desvios", 
-      format.args = list(big.mark = ".", decimal.mark = ","))
+kable(descr,
+      format = ifelse(type == "html", "markdown", type),
+      caption = "Resumo das médias e desvios", 
+      format.args = list(big.mark = ".", decimal.mark = ","),
+      booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped", 
+                bootstrap_options = "striped") 
 ```
 
 
@@ -743,3 +1008,5 @@ kable(descr, caption = "Resumo das médias e desvios",
 Como notamos nas últimas seções, o valor médio das simulações pouco se altera com a mudança das distribuições adotadas. No entanto, o desvio-padrão das simulações é alterado drasticamente com a mudança da distribuição ou dos parâmetros adotados para elas.
 
 Pesquisas devem ser feitas no sentido de estimar parâmetros mais precisos de distribuição das variáveis envolvidas.
+
+# Referências {-}
