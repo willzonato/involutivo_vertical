@@ -1,50 +1,7 @@
----
-title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
-subtitle: "Com o uso do R"
-author: 
-- "Luiz Fernando Palin Droubi"
-- "Willian Zonato"
-date: "06/02/2018"
-output:
-  html_document:
-    df_print: paged
-    keep_md: yes
-  pdf_document: 
-    fig_caption: yes
-    number_sections: yes
-header-includes: \usepackage[brazil]{babel} 
-bibliography: bibliography.bib
-csl: ABNT_UFPR_2011-Mendeley.csl
-link-citations: yes
-documentclass: article
-classoption: a4paper
-params:
-  Nsim: 500
-  ap_andar: 4
-  area_terreno: 500
-  bdi_c: 31.46
-  bdi_i: 23.52
-  c_ref: 1.2
-  cor: 5
-  cub: 1553.57
-  ia: 2.5
-  p_beta: [2, 2]
-  pavs: 5
-  periodo: a.b.
-  prior_dist: runif
-  range_bdi_c: [90, 110]
-  range_bdi_i: [90, 110]
-  range_custos: [90, 110]
-  range_tma: [1.2, 2.6]
-  range_vgv: [90, 110]
-  rf_rate: 1.2
-  taxa_risco: 0.7
-  valor_venda: 7000.0
-  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84]
-  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
----
+# Avaliação de um lote urbano pelo Método Involutivo Vertical
+Luiz Fernando Palin Droubi  
+Willian Zonato  
+`r format(Sys.time(), '%d/%m/%Y')`  
 
 
 
@@ -93,7 +50,10 @@ curve(dunif(x),
           col="darkblue", lwd=2, add=TRUE, yaxt="n")
 ```
 
-<img src="images/runif-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/runif-1.png" alt="Simulação de variável com distribuição uniforme" width="0.7\linewidth" />
+<p class="caption">Simulação de variável com distribuição uniforme</p>
+</div>
 
 ### Distribuição normal
 
@@ -107,7 +67,10 @@ curve(dnorm(x, mean = 10, sd = 2),
           col="darkblue", lwd=2, add=TRUE, yaxt="n")
 ```
 
-<img src="images/rnorm-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/rnorm-1.png" alt="Simulação de variável com distribuição normal" width="0.7\linewidth" />
+<p class="caption">Simulação de variável com distribuição normal</p>
+</div>
 
 ### Distribuição beta
 
@@ -121,7 +84,10 @@ curve(dbeta(x, 4, 4),
           col="darkblue", lwd=2, add=TRUE, yaxt="n")
 ```
 
-<img src="images/rbeta1-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/rbeta1-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 4)" width="0.7\linewidth" />
+<p class="caption">Simulação de variável com distribuição beta (fatores de forma iguais a 4)</p>
+</div>
 
 No caso da distribuição beta a escolha dos parâmetros deve ser criteriosa, haja vista que a mesma pode assumir as mais diferentes formas. Por exemplo, a distribuição beta com parâmetros de forma iguais a 1 é equivalente à distribuição uniforme
 
@@ -133,7 +99,10 @@ curve(dunif(x),
           col="darkblue", lwd=2, add=TRUE, yaxt="n")
 ```
 
-<img src="images/rbeta2-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/rbeta2-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 1)" width="0.7\linewidth" />
+<p class="caption">Simulação de variável com distribuição beta (fatores de forma iguais a 1)</p>
+</div>
 
 ## Geração de variáveis aleatórias multivariadas
 
@@ -164,7 +133,10 @@ persp(bivn.kde, phi = 45, theta = 30)
 persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
-<img src="images/mvrnorm-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/mvrnorm-1.png" alt="Simulação de variáveis independentes com distribuição normal multivariada" width="0.7\linewidth" />
+<p class="caption">Simulação de variáveis independentes com distribuição normal multivariada</p>
+</div>
 
 A independência das variáveis foi estabelecida acima através do argumento `Sigma` da função `mvrnorm`, onde estabelecemos uma matriz diagonal de duas dimensões (`diag(2)`).
 
@@ -172,21 +144,23 @@ A matriz de covariância dos dados simulados pode ser verificada como exibimos a
 
 
 ```r
-kable(cov(bivn), 
-      digits = 3,
-      format = ifelse(type == "html", "markdown", type),
-      caption = "Matriz de correlação verificada", 
-      booktabs = TRUE) %>%
+COV <- cov(bivn)
+row.names(COV) <- c("V1", "V2")
+colnames(COV) <- c("V1", "V2")
+COV %>% kable(format = ifelse(type == "html", "markdown", type),
+              caption = "Matriz de correlação verificada", 
+              digits = 3,
+              booktabs = TRUE) %>%
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE)
 ```
 
 
 
-|       |       |
-|------:|------:|
-|  0.995| -0.002|
-| -0.002|  0.997|
+|   |     V1|     V2|
+|:--|------:|------:|
+|V1 |  0.995| -0.002|
+|V2 | -0.002|  0.997|
 
 Para simular `n` vairáveis aleatórias **dependentes**, basta fornecermos uma matriz `Sigma` simétrica com os termos fora das diagonais fornecendo o coeficiente de correlação entre elas. Por exemplo:
 
@@ -219,7 +193,10 @@ persp(bivn.kde, phi = 45, theta = 30)
 persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
-<img src="images/mvnormdep-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/mvnormdep-1.png" alt="Simulação de variáveis dependentes ($\rho = 0,5$) com distribuição normal multivariada" width="0.7\linewidth" />
+<p class="caption">Simulação de variáveis dependentes ($\rho = 0,5$) com distribuição normal multivariada</p>
+</div>
 
 
 ### Distribuição de Dirichlet
@@ -246,18 +223,19 @@ image(dir.kde); contour(dir.kde, add = T)
 persp(dir.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
-<img src="images/dirichlet-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/dirichlet-1.png" alt="Simulação de distribuição Dirichlet - parâmetros iguais a 1" width="0.7\linewidth" />
+<p class="caption">Simulação de distribuição Dirichlet - parâmetros iguais a 1</p>
+</div>
 
 ### Simulação de variáveis aleatórias dependentes usando Copulas
 
-Para a simulação de variáveis dependentes de quaisquer distribuições, a utilização do Método Copulas é interessante. Há alguns pacotes que implementam este método, como o pacote `simstudy`[@simstudy][^2]. Mas o método também pode ser facilmente implementado com as funções básicas apresentadas até aqui[^3].
+Para a simulação de variáveis dependentes de quaisquer distribuições, a utilização do Método Copulas é interessante. Há alguns pacotes que implementam este método, como o pacote `simstudy`[-simstudy], cuja utilização para o método Copulas pode ser vista em @Copulas. Mas o método também pode ser facilmente implementado com as funções básicas apresentadas até aqui[ver @econometrics].
 
 O método consiste em primeiramente gerar `n` variaveis aleatórias dependentes com a função normal multivariada, transformar estas variáveis brutas em `n` vetores de probabilidades normal através da função `pnorm` e finalmente transformar estes vetores de probabilidades normais em vetores de quantis da distribuição desejada.
 
 Uma versão personalizada deste método com foco na aplicação do Método de Monte Carlo à avaliação de imóveis pelo método involutivo foi elaborada por este autor e encontra-se disponível através da função `vpl_sim` do pacote `appraiseR`[^4][@appraiseR].
 
-[^2]: Ver [https://www.rdatagen.net/post/correlated-data-copula/](https://www.rdatagen.net/post/correlated-data-copula/)
-[^3]: Ver [http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html](http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html)
 [^4]: Ver [https://github.com/lfpdroubi/appraiseR](https://github.com/lfpdroubi/appraiseR)
 
 # Estudo de Caso
@@ -275,10 +253,10 @@ O preço de venda praticado pelo mercado na região do imóvel é de R\$ 7.000,0
 Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 
 
---------  ---  ---  ---  ---  ---  ---  ----  ----  ----  ----  ----  ----  ----  ----
-Periodo   0    1    2    3    4    5    6     7     8     9     10    11    12    13  
-Vendas    0%   0%   5%   5%   5%   5%   10%   10%   10%   10%   10%   10%   10%   10% 
---------  ---  ---  ---  ---  ---  ---  ----  ----  ----  ----  ----  ----  ----  ----
+|        |   |   |   |   |   |   |    |    |    |    |    |    |    |    |
+|:-------|:--|:--|:--|:--|:--|:--|:---|:---|:---|:---|:---|:---|:---|:---|
+|Periodo |0  |1  |2  |3  |4  |5  |6   |7   |8   |9   |10  |11  |12  |13  |
+|Vendas  |0% |0% |5% |5% |5% |5% |10% |10% |10% |10% |10% |10% |10% |10% |
 
 ## Custos de Construção e Cronograma Financeiro
 
@@ -364,11 +342,11 @@ Em relação ao BDI do Construtor, consideraremos uma variação entre 90\% e 11
 Em relação às vendas, consideraremos uma variação entre 90\% e 110\% do vgv provável.
 
 
-|    |Situacao   |     Vendas|       VPL| Variacao|
-|:---|:----------|----------:|---------:|--------:|
-|min |Pessimista |  9.450.000| 2.441.015|    -0,21|
-|    |Provavel   | 10.500.000| 3.083.743|     0,00|
-|max |Otimista   | 11.550.000| 3.726.472|     0,21|
+|Situacao   |     Vendas|       VPL| Variacao|
+|:----------|----------:|---------:|--------:|
+|Pessimista |  9.450.000| 2.441.015|    -0,21|
+|Provavel   | 10.500.000| 3.083.743|     0,00|
+|Otimista   | 11.550.000| 3.726.472|     0,21|
 
 
 ### Sensibilidade em relação ao BDI do Incorporador
@@ -419,9 +397,12 @@ Já para o cenário otimista em relação à velocidade de vendas, foi considera
 
 ### Análise gráfica de sensibilidade
 
-Na figura abaixo são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
+Na figura \ref{s_plots} são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
 
-<img src="images/s_plots-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/s_plots-1.png" alt="\label{s_plots}Análise de Sensibilidade Gráfica" width="0.7\linewidth" />
+<p class="caption">\label{s_plots}Análise de Sensibilidade Gráfica</p>
+</div>
 
 Com os gráficos alinhados, e todos com os mesmos limites de escala em relação ao VPL, é fácil perceber a maior ou menor influência das diferentes variáveis na composição final do VPL.
 
@@ -472,20 +453,20 @@ Os resultados para o cenário provável podem ser encontrados em [Fluxo de Caixa
 No cenário otimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de 110\% do VGV Provável, em conjunto com o fluxo de vendas otimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de 90\% do Custo de Construção Provável e com BDI do Construtor com valor de 90\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de 90\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de 1.2\%.
 
 
-| Periodo|       FCV|        FCI| Corretagem| BDI_Incorporador|        FCL|  fator_VP| FCL_descontado|
-|-------:|---------:|----------:|----------:|----------------:|----------:|---------:|--------------:|
-|       0|         0| -183.106,2|          0|              0,0| -183.106,2| 1,0000000|     -183.106,2|
-|       1|         0| -214.108,3|          0|              0,0| -214.108,3| 0,9881423|     -211.569,4|
-|       2| 1.155.000| -233.807,5|    -57.750|       -244.490,4|  618.952,1| 0,9764252|      604.360,4|
-|       3| 1.155.000| -243.818,6|    -57.750|       -244.490,4|  608.941,0| 0,9648470|      587.534,9|
-|       4| 1.155.000| -347.481,9|    -57.750|       -244.490,4|  505.277,7| 0,9534062|      481.734,9|
-|       5| 1.155.000| -428.216,5|    -57.750|       -244.490,4|  424.543,1| 0,9421009|      399.962,4|
-|       6| 1.155.000| -475.365,5|    -57.750|       -244.490,4|  377.394,1| 0,9309298|      351.327,4|
-|       7| 1.155.000| -424.987,1|    -57.750|       -244.490,4|  427.772,5| 0,9198911|      393.504,1|
-|       8| 1.155.000| -457.926,9|    -57.750|       -244.490,4|  394.832,7| 0,9089833|      358.896,4|
-|       9| 1.155.000| -220.890,0|    -57.750|       -244.490,4|  631.869,6| 0,8982048|      567.548,4|
-|      10| 1.155.000|        0,0|    -57.750|       -244.490,4|  852.759,6| 0,8875542|      756.870,3|
-|      11| 1.155.000|        0,0|    -57.750|       -244.490,4|  852.759,6| 0,8770298|      747.895,6|
+| Periodo|       FCV|      FCI| Corretagem| BDI_Incorporador|      FCL| fator_VP| FCL_descontado|
+|-------:|---------:|--------:|----------:|----------------:|--------:|--------:|--------------:|
+|       0|         0| -183.106|          0|                0| -183.106|     1,00|       -183.106|
+|       1|         0| -214.108|          0|                0| -214.108|     0,99|       -211.569|
+|       2| 1.155.000| -233.808|    -57.750|         -244.490|  618.952|     0,98|        604.360|
+|       3| 1.155.000| -243.819|    -57.750|         -244.490|  608.941|     0,96|        587.535|
+|       4| 1.155.000| -347.482|    -57.750|         -244.490|  505.278|     0,95|        481.735|
+|       5| 1.155.000| -428.217|    -57.750|         -244.490|  424.543|     0,94|        399.962|
+|       6| 1.155.000| -475.366|    -57.750|         -244.490|  377.394|     0,93|        351.327|
+|       7| 1.155.000| -424.987|    -57.750|         -244.490|  427.772|     0,92|        393.504|
+|       8| 1.155.000| -457.927|    -57.750|         -244.490|  394.833|     0,91|        358.896|
+|       9| 1.155.000| -220.890|    -57.750|         -244.490|  631.870|     0,90|        567.548|
+|      10| 1.155.000|        0|    -57.750|         -244.490|  852.760|     0,89|        756.870|
+|      11| 1.155.000|        0|    -57.750|         -244.490|  852.760|     0,88|        747.896|
 
 ### Valor Presente Líquido dos diversos cenários
 
@@ -516,7 +497,7 @@ Foram realizadas 500 simulações com a distribuição uniforme, utilizando-se c
 
 A distribuição uniforme é a mais simples distribuição contínua. Tem como característica ter probabilidades de ocorrência igual para todo o intervalo em que ela é definida.
 
-É muito utilizada na inferência Bayesiana como distribuição a priori, quando não se tem motivos ou dados para se acreditar que uma população tenha uma distribuição diferente da uniforme. Como a distribuição uniforme não penaliza nem prioriza quaisquer valores dentro de um intervalo, ela é considerada a melhor distribuição a priori quando não se sabe como uma variável se comporta dentro deste intervalo. Posteriormente, com a realização de pesquisas, pode-se encontrar uma distribuição diferente da uniforme para a distribuição a posteriori.
+É muito utilizada na inferência Bayesiana como distribuição a priori, quando não se tem motivos ou dados para se acreditar que uma população tenha uma distribuição diferente da uniforme. Como a distribuição uniforme não penaliza nem prioriza quaisquer valores dentro de um intervalo, ela é considerada a melhor distribuição *a priori* quando não se sabe como uma variável se comporta dentro deste intervalo. Posteriormente, com a realização de pesquisas, pode-se encontrar uma distribuição diferente da uniforme para a distribuição *a posteriori*.
 
 #### Variáveis totalmente dependentes
 
@@ -582,7 +563,7 @@ m_unif50 <- mean(vpl_unif50$vpl)
 std_unif50 <- sd(vpl_unif50$vpl)
 ```
 
-Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.076.418,43. 
+Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.070.837,17. 
 
 A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
@@ -592,10 +573,10 @@ sum(vpl_unif50$vpl < 0.85*mean(vpl_unif50$vpl))/Nsim
 ```
 
 ```
-## [1] 0.244
+## [1] 0.246
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.076.418,43** e desvio padrão **588.547,29**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.070.837,17** e desvio padrão **586.336,82**:
 
 
 ```r
@@ -603,7 +584,7 @@ pnorm(0.85*mean(vpl_unif50$vpl), mean = mean(vpl_unif50$vpl), sd = sd(vpl_unif50
 ```
 
 ```
-## [1] 0.2164993
+## [1] 0.2160512
 ```
 
 #### Variáveis totalmente independentes 
@@ -645,7 +626,10 @@ pnorm(0.85*mean(vpl_unif$vpl), mean = mean(vpl_unif$vpl), sd = sd(vpl_unif$vpl))
 
 #### Gráficos
 
-<img src="images/histogramasuniforme-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/histogramasuniforme-1.png" alt="Gráficos -- Distribuição \emph{a priori}: uniforme" width="0.7\linewidth" />
+<p class="caption">Gráficos -- Distribuição \emph{a priori}: uniforme</p>
+</div>
 
 
 ### Simulação de Monte Carlo com distribuição beta
@@ -656,7 +640,10 @@ Da mesma maneira explicada na seção anterior, realizamos 500 simulações com 
 
 A distribuição beta está definida no intervalo (0,1) e pode assumir diferentes formas dentro deste intervalo, motivo pelo qual a distribuição beta é um modelo conveniente para prever o comportamento aleatório de porcentagens e proporções. Dependendo dos fatores de forma $\alpha$ e $\beta$ adotados. Quando os valor de $\alpha$ e $\beta$ são simultaneamente iguais a 1, a distribuição beta toma a forma da distribuição uniforme no intervalo (0,1). Mas a distribuição beta pode tomar uma variedade de formas para outros valores de $\alpha$ e $\beta$, alguns dos quais podem ser vistos abaixo:
 
-<img src="images/variasbeta-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/variasbeta-1.png" alt="Gráficos Distribuição beta -- vários fatores de forma" width="0.7\linewidth" />
+<p class="caption">Gráficos Distribuição beta -- vários fatores de forma</p>
+</div>
 
 É normalmente utilizada na inferência Bayesiana como distribuição a priori, onde os parâmetros $\alpha$ e $\beta$ são inicialmente estimados e posteriormente atualizados de acordo com os resultados de pesquisas.
 
@@ -671,7 +658,10 @@ Isto equivale a dizer que o especialista pode utilizar uma distribuição beta c
 beta_area(0, 0.25, c(3.09, 3.09))
 ```
 
-<img src="images/beta_area-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/beta_area-1.png" alt="Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \emph{a priori}" width="0.7\linewidth" />
+<p class="caption">Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \emph{a priori}</p>
+</div>
 
 Posteriormente, o orçamentista realiza uma pesquisa com 20 obras de construtoras locais e verifica que apenas 7 tiveram custo inferior ao CUB. Com estes dados, o especialista deve atualizar a sua distribuição de probabilidade a priori, obtendo uma distribuição a posteriori que se compara com a distribuição a priori da seguinte maneira:
 
@@ -682,7 +672,10 @@ post_par <- prior_par + data
 beta_prior_post(prior_par, post_par)
 ```
 
-<img src="images/betapriorpost-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/betapriorpost-1.png" alt="Distribuição Beta \emph{a posteriori} -- atualização da forma à partir de pesquisas." width="0.7\linewidth" />
+<p class="caption">Distribuição Beta \emph{a posteriori} -- atualização da forma à partir de pesquisas.</p>
+</div>
 
 Este processo pode ser repetido continuamente, com a distribuição a posteriori tornando-se a nova distribuição a priori e realizando-se nova pesquisa.
 
@@ -724,10 +717,10 @@ sum(vpl_beta2_50$vpl < 0.85*mean(vpl_beta2_50$vpl))/Nsim
 ```
 
 ```
-## [1] 0.172
+## [1] 0.174
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.098.159,42** e desvio padrão **478.484,08**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.100.073,94** e desvio padrão **480.802,12**:
 
 
 ```r
@@ -735,7 +728,7 @@ pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), sd = sd(vpl_be
 ```
 
 ```
-## [1] 0.1657139
+## [1] 0.1667328
 ```
 
 #### Independência Total
@@ -766,7 +759,10 @@ pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vp
 
 #### Gráficos
 
-<img src="images/histogramasbeta-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/histogramasbeta-1.png" alt="Gráficos -- Distribuição \emph{a priori}: Beta 2" width="0.7\linewidth" />
+<p class="caption">Gráficos -- Distribuição \emph{a priori}: Beta 2</p>
+</div>
 
 #### Mudança de parâmetros da distribuição beta
 
@@ -798,7 +794,10 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 ## [1] 0.01004132
 ```
 
-<img src="images/histbeta7-1.png" style="display: block; margin: auto;" />
+<div class="figure" style="text-align: center">
+<img src="images/histbeta7-1.png" alt="Gráfico -- Distribuição \emph{a priori}: Beta 7 -- Independência Total" width="0.7\linewidth" />
+<p class="caption">Gráfico -- Distribuição \emph{a priori}: Beta 7 -- Independência Total</p>
+</div>
 
 
 ## Estatísticas descritivas
@@ -807,23 +806,23 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 |            |      Min.|   1st Qu.|    Median|      Mean|   3rd Qu.|      Max.|
 |:-----------|---------:|---------:|---------:|---------:|---------:|---------:|
 |s_unif_100  | 1.830.675| 2.397.169| 2.977.241| 3.033.769| 3.704.561| 4.363.364|
-|s_unif_50   | 1.879.921| 2.626.646| 3.096.904| 3.076.418| 3.538.888| 4.344.195|
+|s_unif_50   | 1.866.410| 2.614.612| 3.091.766| 3.070.837| 3.536.131| 4.345.420|
 |s_unif      | 1.977.606| 2.777.265| 3.113.936| 3.107.640| 3.441.087| 4.146.205|
 |s_beta2_100 | 1.910.691| 2.658.857| 3.061.174| 3.065.854| 3.519.846| 4.327.316|
-|s_beta2_50  | 1.890.117| 2.752.896| 3.079.547| 3.098.159| 3.459.430| 4.305.635|
+|s_beta2_50  | 1.907.261| 2.749.625| 3.063.516| 3.100.074| 3.452.953| 4.306.794|
 |s_beta2     | 2.219.450| 2.833.522| 3.048.477| 3.073.671| 3.316.966| 4.067.581|
 |s_beta7     | 2.557.123| 2.952.993| 3.091.660| 3.090.242| 3.227.009| 3.677.510|
 
 
-|Distribuição |Dependência    |     Média| Desvio_Padrão|
-|:------------|:--------------|---------:|-------------:|
-|Uniforme     |Total          | 3.033.769|     746.342,7|
-|Uniforme     |Parcial (50\%) | 3.076.418|     588.547,3|
-|Uniforme     |Independente   | 3.107.640|     443.892,3|
-|Beta         |Total          | 3.065.854|     556.618,0|
-|Beta         |Parcial (50\%) | 3.098.159|     478.484,1|
-|Beta         |Independente   | 3.073.671|     339.347,8|
-|Beta         |Independente   | 3.090.242|     199.387,6|
+|Distribuição |Dependência   |     Média| Desvio_Padrão|
+|:------------|:-------------|---------:|-------------:|
+|Uniforme     |Total         | 3.033.769|     746.342,7|
+|Uniforme     |Parcial (50%) | 3.070.837|     586.336,8|
+|Uniforme     |Independente  | 3.107.640|     443.892,3|
+|Beta         |Total         | 3.065.854|     556.618,0|
+|Beta         |Parcial (50%) | 3.100.074|     480.802,1|
+|Beta         |Independente  | 3.073.671|     339.347,8|
+|Beta         |Independente  | 3.090.242|     199.387,6|
 
 
 # Conclusão
@@ -831,5 +830,7 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 Como notamos nas últimas seções, o valor médio das simulações pouco se altera com a mudança das distribuições adotadas. No entanto, o desvio-padrão das simulações é alterado drasticamente com a mudança da distribuição ou dos parâmetros adotados para elas.
 
 Pesquisas devem ser feitas no sentido de estimar parâmetros mais precisos de distribuição das variáveis envolvidas.
+
+\newpage
 
 # Referências {-}

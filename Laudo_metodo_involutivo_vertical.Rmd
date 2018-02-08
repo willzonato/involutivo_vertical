@@ -6,12 +6,13 @@ author:
 - "Willian Zonato"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
-  html_document:
-    df_print: paged
-    keep_md: yes
   pdf_document: 
     fig_caption: yes
     number_sections: yes
+    keep_tex: yes
+  html_document:
+    df_print: paged
+    keep_md: yes
 header-includes: \usepackage[brazil]{babel} 
 bibliography: bibliography.bib
 csl: ABNT_UFPR_2011-Mendeley.csl
@@ -47,9 +48,12 @@ params:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, message = FALSE, warning = FALSE, 
-                      fig.ext='png', fig.align = "center", fig.path = "images/",
-                      fig.pos = "h")
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.path = "cache/", 
+                      message = FALSE, warning = FALSE, 
+                      fig.ext='png', fig.align = "center", 
+                      fig.path = "images/", fig.pos = "H",
+                      fig.asp = 1, out.width = "0.7\\linewidth",
+                      dpi = 600)
 type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 library(appraiseR)
 library(stargazer)
@@ -144,7 +148,7 @@ O **R** possui uma série de funções para a geração randômica de variáveis
 
 Abaixo mostramos como gerar 10^5 números aleatórios, armazenando-os na variável `v`, e criar um histograma desta variável comparada com a curva de distribuição teórica:
 
-```{r runif, fig.height=3, fig.width=4}
+```{r runif, fig.cap = "Simulação de variável com distribuição uniforme"}
 v <- runif(10^5)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -155,7 +159,7 @@ curve(dunif(x),
 
 O mesmo procedimento pode ser feito para a distribuição normal, onde deve-se definir uma valor para a média (`mean = 10`) e o desvio-padrão (`sd = 2`) dos dados simulados.
 
-```{r rnorm, fig.height=3, fig.width=4}
+```{r rnorm, fig.cap = "Simulação de variável com distribuição normal"}
 v <- rnorm(10^5, mean = 10, sd = 2)
 hist(v, freq = FALSE)
 curve(dnorm(x, mean = 10, sd = 2), 
@@ -166,7 +170,7 @@ curve(dnorm(x, mean = 10, sd = 2),
 
 Para a geração de variáveis com distribuição beta, basta informa os parâmetros de forma da mesma, através dos argumentos `shape1` e` shape2`:
 
-```{r rbeta1, fig.height=3, fig.width=4}
+```{r rbeta1, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 4)"}
 v <- rbeta(10^5, shape1 = 4, shape2 = 4)
 hist(v, freq = FALSE)
 curve(dbeta(x, 4, 4), 
@@ -175,7 +179,7 @@ curve(dbeta(x, 4, 4),
 
 No caso da distribuição beta a escolha dos parâmetros deve ser criteriosa, haja vista que a mesma pode assumir as mais diferentes formas. Por exemplo, a distribuição beta com parâmetros de forma iguais a 1 é equivalente à distribuição uniforme
 
-```{r rbeta2, fig.height=3, fig.width=4}
+```{r rbeta2, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 1)"}
 v <- rbeta(10^5, shape1 = 1, shape2 = 1)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -188,7 +192,7 @@ curve(dunif(x),
 
 Abaixo demonstramos com simular `n` variáveis aleatórias **independentes** de uma distribuição normal multivariada, assim como obter seus gráficos tridimensionais. Para as simulações podem ser utilizadas a função `mvrnorm`, disponível dentro do pacote `MASS`[-@MASS].
 
-```{r mvrnorm, fig.show='hold'}
+```{r mvrnorm, fig.show='hold', fig.cap = "Simulação de variáveis independentes com distribuição normal multivariada"}
 library(MASS)
 # Geração
 bivn <- mvrnorm(10^5, mu = c(0, 0), Sigma = diag(2))
@@ -216,11 +220,13 @@ A independência das variáveis foi estabelecida acima através do argumento `Si
 A matriz de covariância dos dados simulados pode ser verificada como exibimos abaixo:
 
 ```{r cov}
-kable(cov(bivn), 
-      digits = 3,
-      format = ifelse(type == "html", "markdown", type),
-      caption = "Matriz de correlação verificada", 
-      booktabs = TRUE) %>%
+COV <- cov(bivn)
+row.names(COV) <- c("V1", "V2")
+colnames(COV) <- c("V1", "V2")
+COV %>% kable(format = ifelse(type == "html", "markdown", type),
+              caption = "Matriz de correlação verificada", 
+              digits = 3,
+              booktabs = TRUE) %>%
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE)
 ```
@@ -229,17 +235,16 @@ Para simular `n` vairáveis aleatórias **dependentes**, basta fornecermos uma m
 
 ```{r simcor, echo = FALSE}
 S <- matrix(c(1, 0.5, 0.5, 1), nrow = 2, dimnames = list(c("V1", "V2"), c("V1", "V2")))
-kable(S, 
-      format = ifelse(type == "html", "markdown", type),
-      caption = "Matriz de correlação desejada entre as variáveis aleatórias", 
-      booktabs = TRUE) %>%
+S %>% kable(format = ifelse(type == "html", "markdown", type),
+            caption = "Matriz de covariância desejada entre as variáveis aleatórias", 
+            booktabs = TRUE) %>%
   kable_styling(latex_options = "striped",
                 bootstrap_options = 'striped', 
                 full_width = FALSE)
 ```
 
 
-```{r mvnormdep, fig.show='hold'}
+```{r mvnormdep, fig.show='hold', fig.cap = "Simulação de variáveis dependentes ($\\rho = 0,5$) com distribuição normal multivariada"}
 # Geração
 bivn <- mvrnorm(10^5, mu = c(0, 0), Sigma =  S)
 
@@ -265,7 +270,7 @@ persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
 
 A simulação de dados multivariados da distribuição de Dirichlet, que é uma versão generalização multivariada da distribuição beta, pode ser feita através da função `rdirichlet`, do pacote `LearnBayes`[@LearnBayes]:
 
-```{r dirichlet}
+```{r dirichlet, fig.cap = "Simulação de distribuição Dirichlet - parâmetros iguais a 1"}
 # Geração
 m <- rdirichlet(10^2, par = c(1, 1))
 dir.kde <- kde2d(m[,1], m[,2], n = 50)
@@ -286,14 +291,12 @@ persp(dir.kde, phi = 45, theta = 30, shade = .1, border = NA)
 
 ### Simulação de variáveis aleatórias dependentes usando Copulas
 
-Para a simulação de variáveis dependentes de quaisquer distribuições, a utilização do Método Copulas é interessante. Há alguns pacotes que implementam este método, como o pacote `simstudy`[@simstudy][^2]. Mas o método também pode ser facilmente implementado com as funções básicas apresentadas até aqui[^3].
+Para a simulação de variáveis dependentes de quaisquer distribuições, a utilização do Método Copulas é interessante. Há alguns pacotes que implementam este método, como o pacote `simstudy`[-simstudy], cuja utilização para o método Copulas pode ser vista em @Copulas. Mas o método também pode ser facilmente implementado com as funções básicas apresentadas até aqui[ver @econometrics].
 
 O método consiste em primeiramente gerar `n` variaveis aleatórias dependentes com a função normal multivariada, transformar estas variáveis brutas em `n` vetores de probabilidades normal através da função `pnorm` e finalmente transformar estes vetores de probabilidades normais em vetores de quantis da distribuição desejada.
 
 Uma versão personalizada deste método com foco na aplicação do Método de Monte Carlo à avaliação de imóveis pelo método involutivo foi elaborada por este autor e encontra-se disponível através da função `vpl_sim` do pacote `appraiseR`[^4][@appraiseR].
 
-[^2]: Ver [https://www.rdatagen.net/post/correlated-data-copula/](https://www.rdatagen.net/post/correlated-data-copula/)
-[^3]: Ver [http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html](http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html)
 [^4]: Ver [https://github.com/lfpdroubi/appraiseR](https://github.com/lfpdroubi/appraiseR)
 
 # Estudo de Caso
@@ -314,9 +317,10 @@ Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 WV <- data.frame(Periodo = 0:(length(wv)-1), 
                  Vendas = paste(100*wv, "%", sep = "")
                  )
-kable(t(WV), booktabs = TRUE, longtable = TRUE) %>% 
-  kable_styling(latex_options = "striped", 
-                bootstrap_options = "striped")
+t(WV) %>% kable(format = ifelse(type == "html", "markdown", type),
+                caption = "Vendas por período", 
+                booktabs = TRUE) %>%
+  kable_styling(full_width = FALSE)
 ```
 
 ## Custos de Construção e Cronograma Financeiro
@@ -329,9 +333,10 @@ O cronograma financeiro da construção foi estimado bimestralmente como mostrad
 WC <- data.frame(Periodo = 0:(length(wc)-1), 
                  Custos = paste(100*wc, "%", sep = "")
                  )
-kable(t(WC), 
-      format = ifelse(type == "html", "markdown", type), 
-      booktabs = TRUE)
+t(WC)  %>% kable(format = ifelse(type == "html", "markdown", type), 
+                 caption = "Cronograma financeiro -- Custos de Construção",
+                 booktabs = TRUE,) %>%
+  kable_styling(full_width = FALSE)
 ```
 
 ## Taxa mínima de atratividade (TMA)
@@ -345,12 +350,12 @@ O Fluxo de Caixa do Empreendimento pode ser visto abaixo:
 ```{r FC, echo = FALSE, results = 'asis'}
 fci_provavel <- FCI(cc = cc, wc = wc, bdi_c = bdi_c)
 fcv_provavel <- FCV(vgv = vgv, wv = wv)
-kable(FC(fcv_provavel, fci_provavel, bdi_i = bdi_i, cor = cor, tma = tma), 
-      format = ifelse(type == "html", "markdown", type),
-      digits = 2,
-      caption = "Tabela de Fluxo de Caixa do Emprendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ","),
-      booktabs = TRUE) %>% 
+fluxo <- FC(fcv_provavel, fci_provavel, bdi_i = bdi_i, cor = cor, tma = tma)
+fluxo %>% kable(format = ifelse(type == "html", "markdown", type),
+                digits = 2,
+                caption = "Tabela de Fluxo de Caixa do Emprendimento", 
+                format.args = list(big.mark = ".", decimal.mark = ","),
+                booktabs = TRUE) %>% 
   kable_styling(latex_options = c("striped", "scale_down"), 
                 bootstrap_options = "striped")
 ```
@@ -428,18 +433,19 @@ Em relação às vendas, consideraremos uma variação entre `r 100*range_vgv["m
 
 ```{r s_vgv, echo = FALSE, message = FALSE}
 s_vgv <- sensibilidade_venda(range = range_vgv,
-                               cc = cc, wc = wc,
-                               vgv = vgv, wv = wv,
-                               bdi_i = bdi_i, bdi_c = bdi_c,
-                               cor = cor, tma = tma)
-kable(s_vgv,  
-      format = ifelse(type == "html", "markdown", type),
-      digits = 2,
-      caption = "Sensibilidade do VPL à variação do VGV", 
-      format.args = list(big.mark = ".", decimal.mark = ","),
-      booktabs = TRUE) %>% 
+                             cc = cc, wc = wc,
+                             vgv = vgv, wv = wv,
+                             bdi_i = bdi_i, bdi_c = bdi_c,
+                             cor = cor, tma = tma)
+row.names(s_vgv) <- NULL
+s_vgv %>% kable(format = ifelse(type == "html", "markdown", type),
+                digits = 2,
+                caption = "Sensibilidade do VPL à variação do VGV", 
+                format.args = list(big.mark = ".", decimal.mark = ","),
+                booktabs = TRUE) %>% 
   kable_styling(latex_options = "striped", 
-                bootstrap_options = "striped")      
+                bootstrap_options = "striped",
+                full_width = FALSE)      
 ```
 
 
@@ -482,7 +488,7 @@ WV_otimista <- data.frame(Periodo = 0:(length(wv_otimista)-1),
                             Vendas = paste(100*wv_otimista, "%", sep = ""))
 kable(t(WV_otimista),
       format = ifelse(type == "html", "markdown", type),
-      caption = "Velocidade de Vendas -- Cenário Otimsta",
+      caption = "Velocidade de Vendas -- Cenário Otimista",
       booktabs = TRUE) 
 ```
 
@@ -505,9 +511,9 @@ kable(s_vv,
 
 ### Análise gráfica de sensibilidade
 
-Na figura abaixo são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
+Na figura \ref{s_plots} são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
 
-```{r s_plots, echo = FALSE, fig.width = 6, fig.height = 4.5}
+```{r s_plots, fig.pos = "p", echo = FALSE, fig.width = 6, fig.height = 4.5, fig.cap = "\\label{s_plots}Análise de Sensibilidade Gráfica"}
 join_tbl <-
   s_tma %>%
   full_join(s_custo) %>%
@@ -581,11 +587,10 @@ No cenário pessimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se
 fcv_pessimista <- FCV(range_vgv["min"]*vgv, w = wv_pessimista)
 fci_pessimista <- FCI(range_custos["max"]*cc, w = wc, bdi_c = range_bdi_c["max"]*bdi_c)
 FC_pessimista <- FC(fcv_pessimista, fci_pessimista, range_bdi_i["max"]*bdi_i, cor = cor, tma = range_tma["max"])
-kable(FC_pessimista, 
-      digits = c(rep(0, 6), 2, 0),
-      format = ifelse(type == "html", "markdown", type),
-      caption = "Fluxo de Caixa pessimista do Empreendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ","),
+FC_pessimista %>% kable(digits = c(rep(0, 6), 2, 0),
+                        format = ifelse(type == "html", "markdown", type),
+                        caption = "Fluxo de Caixa Pessimista do Empreendimento", 
+                        format.args = list(big.mark = ".", decimal.mark = ","),
       booktabs = TRUE)  %>%
   kable_styling(latex_options = "striped", 
                 bootstrap_options = "striped",
@@ -604,13 +609,14 @@ No cenário otimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se u
 fcv_otimista <- FCV(range_vgv["max"]*vgv, w = wv_otimista)
 fci_otimista <- FCI(range_custos["min"]*cc, w = wc, bdi_c = range_bdi_c["min"]*bdi_c)
 FC_otimista <- FC(fcv_otimista, fci_otimista, range_bdi_i["min"]*bdi_i, cor = cor, tma = range_tma["min"])
-kable(FC_otimista, 
-      format = ifelse(type == "html", "markdown", type),
-      caption = "Fluxo de Caixa otimista do Empreendimento", 
-      format.args = list(big.mark = ".", decimal.mark = ","),
-      booktabs = TRUE)  %>%
+FC_otimista %>% kable(digits = c(rep(0, 6), 2, 0),
+                      format = ifelse(type == "html", "markdown", type),
+                      caption = "Fluxo de Caixa Otimista do Empreendimento", 
+                      format.args = list(big.mark = ".", decimal.mark = ","),
+                      booktabs = TRUE)  %>%
   kable_styling(latex_options = "striped", 
-                bootstrap_options = "striped")
+                bootstrap_options = "striped",
+                full_width = TRUE)
 ```
 
 ### Valor Presente Líquido dos diversos cenários
@@ -629,7 +635,9 @@ ranges <- list(vgv = range_vgv,
                cc = range_custos, 
                bdi_i = range_bdi_i, 
                bdi_c = range_bdi_c)
-variables <- list(vgv = vgv, wv = wv, cc = cc, wc = wc, bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, tma = tma)
+variables <- list(vgv = vgv, wv = wv, cc = cc, wc = wc, 
+                  bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, 
+                  tma = tma)
 ```
 
 ### Simulação de Monte Carlo com distribuição uniforme
@@ -640,11 +648,11 @@ Foram realizadas `r Nsim` simulações com a distribuição uniforme, utilizando
 
 A distribuição uniforme é a mais simples distribuição contínua. Tem como característica ter probabilidades de ocorrência igual para todo o intervalo em que ela é definida.
 
-É muito utilizada na inferência Bayesiana como distribuição a priori, quando não se tem motivos ou dados para se acreditar que uma população tenha uma distribuição diferente da uniforme. Como a distribuição uniforme não penaliza nem prioriza quaisquer valores dentro de um intervalo, ela é considerada a melhor distribuição a priori quando não se sabe como uma variável se comporta dentro deste intervalo. Posteriormente, com a realização de pesquisas, pode-se encontrar uma distribuição diferente da uniforme para a distribuição a posteriori.
+É muito utilizada na inferência Bayesiana como distribuição a priori, quando não se tem motivos ou dados para se acreditar que uma população tenha uma distribuição diferente da uniforme. Como a distribuição uniforme não penaliza nem prioriza quaisquer valores dentro de um intervalo, ela é considerada a melhor distribuição *a priori* quando não se sabe como uma variável se comporta dentro deste intervalo. Posteriormente, com a realização de pesquisas, pode-se encontrar uma distribuição diferente da uniforme para a distribuição *a posteriori*.
 
 #### Variáveis totalmente dependentes
 
-A simulação da dependência total das variáveis pode ser feita através da construção de uma matriz de correlação como vista abaixo:
+A simulação da dependência total das variáveis pode ser feita através da construção de uma matriz de covariancia como vista abaixo:
 
 ```{r unif100_matrix, echo = FALSE}
 dependencia100 <- matrix(data = c(1, -1, -1, -1,
@@ -655,9 +663,9 @@ dependencia100 <- matrix(data = c(1, -1, -1, -1,
                          byrow = TRUE, 
                          dimnames = list(names(ranges), names(ranges))
                          )
-kable(dependencia100,
-      format = ifelse(type == "html", "markdown", type),
-      booktabs = TRUE)  %>%
+dependencia100 %>% kable(format = ifelse(type == "html", "markdown", type),
+                         caption = "Matriz de Covariancia -- variaveis totalmente dependentes",
+                         booktabs = TRUE)  %>%
   kable_styling(latex_options = "striped", 
                 bootstrap_options = "striped")
 ```
@@ -671,7 +679,7 @@ std_unif100 <- sd(vpl_unif100$vpl)
 
 Baseados nas `r Nsim` simulações, o VPL esperado é igual o valor médio das simulações, ou seja, `r reais(m_unif100)`. 
 
-A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
+A probabilidade que o VPL seja inferior a 85% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
 ```{r p85simulada}
 sum(vpl_unif100$vpl < 0.85*mean(vpl_unif100$vpl))/Nsim
@@ -685,7 +693,7 @@ pnorm(0.85*mean(vpl_unif100$vpl), mean = mean(vpl_unif100$vpl), sd = sd(vpl_unif
 
 #### Variáveis parcialmente (50%) dependentes
 
-Para simular a dependência parcial das variáveis foi montada uma matriz de correlação como abaixo:
+Para simular a dependência parcial das variáveis foi montada uma matriz de covariancia como a abaixo:
 
 ```{r unif50_matrix, echo=FALSE}
 dependencia50 <- matrix(data = c(1, -.5, -.5, -.5,
@@ -695,9 +703,10 @@ dependencia50 <- matrix(data = c(1, -.5, -.5, -.5,
                         nrow = 4, 
                         byrow = TRUE, 
                         dimnames = list(names(ranges), names(ranges)))
-kable(dependencia50,
-      format = ifelse(type == "html", "markdown", type),
-      booktabs = TRUE)  %>%
+dependencia50 %>% kable(format = ifelse(type == "html", "markdown", type),
+                        caption = "Matriz de Covariancia -- variaveis 50\\% dependentes",
+                        booktabs = TRUE,
+                        escape = TRUE)  %>%
   kable_styling(latex_options = "striped", 
                 bootstrap_options = "striped")
 ```
@@ -730,9 +739,9 @@ Para a simulação com variáveis totalmente independentes, constrói-se uma mat
 ```{r unif_matrix, echo=FALSE}
 dependencia0 <- diag(4)
 dimnames(dependencia0) <- list(names(ranges), names(ranges))
-kable(dependencia0,
-      format = ifelse(type == "html", "markdown", type),
-      booktabs = TRUE)  %>%
+dependencia0 %>% kable(format = ifelse(type == "html", "markdown", type),
+                       caption = "Matriz de Covariancia -- variaveis totalmente independentes",
+                       booktabs = TRUE)  %>%
   kable_styling(latex_options = "striped", 
                 bootstrap_options = "striped")
 ```
@@ -759,7 +768,7 @@ pnorm(0.85*mean(vpl_unif$vpl), mean = mean(vpl_unif$vpl), sd = sd(vpl_unif$vpl))
 
 #### Gráficos
 
-```{r histogramasuniforme, echo=FALSE, fig.width = 6, fig.height = 8}
+```{r histogramasuniforme, echo=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Gráficos -- Distribuição \\emph{a priori}: uniforme"}
 p1_unif <- ggplot(as.data.frame(vpl_unif100), aes(vpl)) + 
   geom_histogram(aes(y =..density..), col="red", fill="green", alpha=.2) +
   stat_function(
@@ -793,7 +802,7 @@ Da mesma maneira explicada na seção anterior, realizamos `r Nsim` simulações
 
 A distribuição beta está definida no intervalo (0,1) e pode assumir diferentes formas dentro deste intervalo, motivo pelo qual a distribuição beta é um modelo conveniente para prever o comportamento aleatório de porcentagens e proporções. Dependendo dos fatores de forma $\alpha$ e $\beta$ adotados. Quando os valor de $\alpha$ e $\beta$ são simultaneamente iguais a 1, a distribuição beta toma a forma da distribuição uniforme no intervalo (0,1). Mas a distribuição beta pode tomar uma variedade de formas para outros valores de $\alpha$ e $\beta$, alguns dos quais podem ser vistos abaixo:
 
-```{r variasbeta, echo = FALSE, fig.align = "center"}
+```{r variasbeta, echo = FALSE, fig.align = "center", fig.cap = "Gráficos Distribuição beta -- vários fatores de forma"}
 xvalues <- data.frame(x = c(0, 1))
 plot <- ggplot(xvalues, aes(x = xvalues))
 p_beta_2 <- plot + 
@@ -827,13 +836,13 @@ prior_par <- beta.select(p50, p10)
 
 Isto equivale a dizer que o especialista pode utilizar uma distribuição beta como a mostrada abaixo como uma distribuição a priori do custo das obras no seu município:
 
-```{r beta_area}
+```{r beta_area, fig.cap = "Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \\emph{a priori}"}
 beta_area(0, 0.25, c(3.09, 3.09))
 ```
 
 Posteriormente, o orçamentista realiza uma pesquisa com 20 obras de construtoras locais e verifica que apenas 7 tiveram custo inferior ao CUB. Com estes dados, o especialista deve atualizar a sua distribuição de probabilidade a priori, obtendo uma distribuição a posteriori que se compara com a distribuição a priori da seguinte maneira:
 
-```{r betapriorpost}
+```{r betapriorpost, fig.cap = "Distribuição Beta \\emph{a posteriori} -- atualização da forma à partir de pesquisas."}
 data <- c(13, 7)
 post_par <- prior_par + data
 beta_prior_post(prior_par, post_par)
@@ -907,7 +916,7 @@ pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vp
 
 #### Gráficos
 
-```{r histogramasbeta, echo=FALSE, fig.width = 6, fig.height = 8}
+```{r histogramasbeta, echo=FALSE, fig.width = 6, fig.height = 8, fig.cap = "Gráficos -- Distribuição \\emph{a priori}: Beta 2"}
 p1_beta2 <- ggplot(as.data.frame(vpl_beta2_100), aes(vpl)) + 
   geom_histogram(aes(y =..density..), col="red", fill="green", alpha=.2) +
   stat_function(
@@ -959,7 +968,7 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vpl))
 ```
 
-```{r histbeta7, echo = FALSE}
+```{r histbeta7, echo = FALSE, fig.cap = "Gráfico -- Distribuição \\emph{a priori}: Beta 7 -- Independência Total"}
 ggplot(vpl_beta7, aes(vpl)) + 
   geom_histogram(aes(y =..density..), col="red", fill="green", alpha=.2) +
   stat_function(
@@ -992,7 +1001,7 @@ kable(s,
 
 ```{r resumo, echo = FALSE}
 descr <- data.frame(Distribuição = c(rep("Uniforme", 3), rep("Beta", 4)),
-                    Dependência = c(rep(c("Total", "Parcial (50\\%)", "Independente"), 2), "Independente"),
+                    Dependência = c(rep(c("Total", "Parcial (50%)", "Independente"), 2), "Independente"),
                     Média = c(m_unif100, m_unif50, m_unif, m_beta2_100, m_beta2_50, m_beta2, m_beta7), 
                     Desvio_Padrão = c(std_unif100, std_unif50, std_unif, std_beta2_100, std_beta2_50, std_beta2, std_beta7)
                     )
@@ -1001,7 +1010,7 @@ kable(descr,
       caption = "Resumo das médias e desvios", 
       format.args = list(big.mark = ".", decimal.mark = ","),
       booktabs = TRUE) %>%
-  kable_styling(latex_options = "striped", 
+  kable_styling(latex_options = c("striped", "HOLD_position"), 
                 bootstrap_options = "striped") 
 ```
 
