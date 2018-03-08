@@ -7,7 +7,7 @@ author:
 date: "08/03/2018"
 output:
   html_document:
-    df_print: paged
+    fig_caption: yes
     keep_md: yes
   pdf_document: 
     fig_caption: yes

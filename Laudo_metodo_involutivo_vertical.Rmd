@@ -6,13 +6,13 @@ author:
 - "Willian Zonato"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
+  html_document:
+    fig_caption: yes
+    keep_md: yes
   pdf_document: 
     fig_caption: yes
     number_sections: yes
     keep_tex: yes
-  html_document:
-    df_print: paged
-    keep_md: yes
 header-includes: \usepackage[brazil]{babel} 
 bibliography: bibliography.bib
 csl: ABNT_UFPR_2011-Mendeley.csl
