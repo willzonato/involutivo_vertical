@@ -1,7 +1,51 @@
-# Avaliação de um lote urbano pelo Método Involutivo Vertical
-Luiz Fernando Palin Droubi  
-Willian Zonato  
-`r format(Sys.time(), '%d/%m/%Y')`  
+---
+title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
+subtitle: "Com o uso do R"
+author: 
+- "Luiz Fernando Palin Droubi"
+- "Willian Zonato"
+date: "08/03/2018"
+output:
+  html_document:
+    df_print: paged
+    keep_md: yes
+  pdf_document: 
+    fig_caption: yes
+    number_sections: yes
+    keep_tex: yes
+header-includes: \usepackage[brazil]{babel} 
+bibliography: bibliography.bib
+csl: ABNT_UFPR_2011-Mendeley.csl
+link-citations: yes
+documentclass: article
+classoption: a4paper
+params:
+  Nsim: 500
+  ap_andar: 4
+  area_terreno: 500
+  bdi_c: 31.46
+  bdi_i: 23.52
+  c_ref: 1.2
+  cor: 5
+  cub: 1553.57
+  ia: 2.5
+  p_beta: [2, 2]
+  pavs: 5
+  periodo: a.b.
+  prior_dist: runif
+  range_bdi_c: [90, 110]
+  range_bdi_i: [90, 110]
+  range_custos: [90, 110]
+  range_tma: [1.2, 2.6]
+  range_vgv: [90, 110]
+  rf_rate: 1.2
+  taxa_risco: 0.7
+  valor_venda: 7000.0
+  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84]
+  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2]
+  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+---
 
 
 
@@ -51,7 +95,7 @@ curve(dunif(x),
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/runif-1.png" alt="Simulação de variável com distribuição uniforme" width="0.7\linewidth" />
+<img src="images/runif-1.png" alt="Simulação de variável com distribuição uniforme" width="70%" />
 <p class="caption">Simulação de variável com distribuição uniforme</p>
 </div>
 
@@ -68,7 +112,7 @@ curve(dnorm(x, mean = 10, sd = 2),
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/rnorm-1.png" alt="Simulação de variável com distribuição normal" width="0.7\linewidth" />
+<img src="images/rnorm-1.png" alt="Simulação de variável com distribuição normal" width="70%" />
 <p class="caption">Simulação de variável com distribuição normal</p>
 </div>
 
@@ -85,7 +129,7 @@ curve(dbeta(x, 4, 4),
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/rbeta1-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 4)" width="0.7\linewidth" />
+<img src="images/rbeta1-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 4)" width="70%" />
 <p class="caption">Simulação de variável com distribuição beta (fatores de forma iguais a 4)</p>
 </div>
 
@@ -100,7 +144,7 @@ curve(dunif(x),
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/rbeta2-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 1)" width="0.7\linewidth" />
+<img src="images/rbeta2-1.png" alt="Simulação de variável com distribuição beta (fatores de forma iguais a 1)" width="70%" />
 <p class="caption">Simulação de variável com distribuição beta (fatores de forma iguais a 1)</p>
 </div>
 
@@ -134,7 +178,7 @@ persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/mvrnorm-1.png" alt="Simulação de variáveis independentes com distribuição normal multivariada" width="0.7\linewidth" />
+<img src="images/mvrnorm-1.png" alt="Simulação de variáveis independentes com distribuição normal multivariada" width="70%" />
 <p class="caption">Simulação de variáveis independentes com distribuição normal multivariada</p>
 </div>
 
@@ -194,7 +238,7 @@ persp(bivn.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/mvnormdep-1.png" alt="Simulação de variáveis dependentes ($\rho = 0,5$) com distribuição normal multivariada" width="0.7\linewidth" />
+<img src="images/mvnormdep-1.png" alt="Simulação de variáveis dependentes ($\rho = 0,5$) com distribuição normal multivariada" width="70%" />
 <p class="caption">Simulação de variáveis dependentes ($\rho = 0,5$) com distribuição normal multivariada</p>
 </div>
 
@@ -224,7 +268,7 @@ persp(dir.kde, phi = 45, theta = 30, shade = .1, border = NA)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/dirichlet-1.png" alt="Simulação de distribuição Dirichlet - parâmetros iguais a 1" width="0.7\linewidth" />
+<img src="images/dirichlet-1.png" alt="Simulação de distribuição Dirichlet - parâmetros iguais a 1" width="70%" />
 <p class="caption">Simulação de distribuição Dirichlet - parâmetros iguais a 1</p>
 </div>
 
@@ -400,7 +444,7 @@ Já para o cenário otimista em relação à velocidade de vendas, foi considera
 Na figura \ref{s_plots} são mostrados os gráficos para as análises de sensibilidade efetuadas acima.
 
 <div class="figure" style="text-align: center">
-<img src="images/s_plots-1.png" alt="\label{s_plots}Análise de Sensibilidade Gráfica" width="0.7\linewidth" />
+<img src="images/s_plots-1.png" alt="\label{s_plots}Análise de Sensibilidade Gráfica" width="70%" />
 <p class="caption">\label{s_plots}Análise de Sensibilidade Gráfica</p>
 </div>
 
@@ -486,7 +530,9 @@ ranges <- list(vgv = range_vgv,
                cc = range_custos, 
                bdi_i = range_bdi_i, 
                bdi_c = range_bdi_c)
-variables <- list(vgv = vgv, wv = wv, cc = cc, wc = wc, bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, tma = tma)
+variables <- list(vgv = vgv, wv = wv, cc = cc, wc = wc, 
+                  bdi_i = bdi_i, bdi_c = bdi_c, cor = cor, 
+                  tma = tma)
 ```
 
 ### Simulação de Monte Carlo com distribuição uniforme
@@ -501,7 +547,7 @@ A distribuição uniforme é a mais simples distribuição contínua. Tem como c
 
 #### Variáveis totalmente dependentes
 
-A simulação da dependência total das variáveis pode ser feita através da construção de uma matriz de correlação como vista abaixo:
+A simulação da dependência total das variáveis pode ser feita através da construção de uma matriz de covariancia como vista abaixo:
 
 
 |      | vgv| cc| bdi_i| bdi_c|
@@ -521,7 +567,7 @@ std_unif100 <- sd(vpl_unif100$vpl)
 
 Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.033.769,44. 
 
-A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
+A probabilidade que o VPL seja inferior a 85% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
 
 ```r
@@ -545,7 +591,7 @@ pnorm(0.85*mean(vpl_unif100$vpl), mean = mean(vpl_unif100$vpl), sd = sd(vpl_unif
 
 #### Variáveis parcialmente (50%) dependentes
 
-Para simular a dependência parcial das variáveis foi montada uma matriz de correlação como abaixo:
+Para simular a dependência parcial das variáveis foi montada uma matriz de covariancia como a abaixo:
 
 
 |      |  vgv|   cc| bdi_i| bdi_c|
@@ -563,7 +609,7 @@ m_unif50 <- mean(vpl_unif50$vpl)
 std_unif50 <- sd(vpl_unif50$vpl)
 ```
 
-Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.070.837,17. 
+Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.076.418,43. 
 
 A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
@@ -573,10 +619,10 @@ sum(vpl_unif50$vpl < 0.85*mean(vpl_unif50$vpl))/Nsim
 ```
 
 ```
-## [1] 0.246
+## [1] 0.244
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.070.837,17** e desvio padrão **586.336,82**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.076.418,43** e desvio padrão **588.547,29**:
 
 
 ```r
@@ -584,7 +630,7 @@ pnorm(0.85*mean(vpl_unif50$vpl), mean = mean(vpl_unif50$vpl), sd = sd(vpl_unif50
 ```
 
 ```
-## [1] 0.2160512
+## [1] 0.2164993
 ```
 
 #### Variáveis totalmente independentes 
@@ -627,7 +673,7 @@ pnorm(0.85*mean(vpl_unif$vpl), mean = mean(vpl_unif$vpl), sd = sd(vpl_unif$vpl))
 #### Gráficos
 
 <div class="figure" style="text-align: center">
-<img src="images/histogramasuniforme-1.png" alt="Gráficos -- Distribuição \emph{a priori}: uniforme" width="0.7\linewidth" />
+<img src="images/histogramasuniforme-1.png" alt="Gráficos -- Distribuição \emph{a priori}: uniforme" width="70%" />
 <p class="caption">Gráficos -- Distribuição \emph{a priori}: uniforme</p>
 </div>
 
@@ -641,7 +687,7 @@ Da mesma maneira explicada na seção anterior, realizamos 500 simulações com 
 A distribuição beta está definida no intervalo (0,1) e pode assumir diferentes formas dentro deste intervalo, motivo pelo qual a distribuição beta é um modelo conveniente para prever o comportamento aleatório de porcentagens e proporções. Dependendo dos fatores de forma $\alpha$ e $\beta$ adotados. Quando os valor de $\alpha$ e $\beta$ são simultaneamente iguais a 1, a distribuição beta toma a forma da distribuição uniforme no intervalo (0,1). Mas a distribuição beta pode tomar uma variedade de formas para outros valores de $\alpha$ e $\beta$, alguns dos quais podem ser vistos abaixo:
 
 <div class="figure" style="text-align: center">
-<img src="images/variasbeta-1.png" alt="Gráficos Distribuição beta -- vários fatores de forma" width="0.7\linewidth" />
+<img src="images/variasbeta-1.png" alt="Gráficos Distribuição beta -- vários fatores de forma" width="70%" />
 <p class="caption">Gráficos Distribuição beta -- vários fatores de forma</p>
 </div>
 
@@ -659,7 +705,7 @@ beta_area(0, 0.25, c(3.09, 3.09))
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/beta_area-1.png" alt="Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \emph{a priori}" width="0.7\linewidth" />
+<img src="images/beta_area-1.png" alt="Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \emph{a priori}" width="70%" />
 <p class="caption">Distribuição Beta: obtenção dos fatores de forma à partir das proporções imaginadas \emph{a priori}</p>
 </div>
 
@@ -673,7 +719,7 @@ beta_prior_post(prior_par, post_par)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/betapriorpost-1.png" alt="Distribuição Beta \emph{a posteriori} -- atualização da forma à partir de pesquisas." width="0.7\linewidth" />
+<img src="images/betapriorpost-1.png" alt="Distribuição Beta \emph{a posteriori} -- atualização da forma à partir de pesquisas." width="70%" />
 <p class="caption">Distribuição Beta \emph{a posteriori} -- atualização da forma à partir de pesquisas.</p>
 </div>
 
@@ -698,7 +744,8 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 
 
 ```r
-pnorm(0.85*mean(vpl_beta2_100$vpl), mean = mean(vpl_beta2_100$vpl), sd = sd(vpl_beta2_100$vpl))
+pnorm(0.85*mean(vpl_beta2_100$vpl), mean = mean(vpl_beta2_100$vpl), 
+      sd = sd(vpl_beta2_100$vpl))
 ```
 
 ```
@@ -717,18 +764,19 @@ sum(vpl_beta2_50$vpl < 0.85*mean(vpl_beta2_50$vpl))/Nsim
 ```
 
 ```
-## [1] 0.174
+## [1] 0.172
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.100.073,94** e desvio padrão **480.802,12**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.098.159,42** e desvio padrão **478.484,08**:
 
 
 ```r
-pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), sd = sd(vpl_beta2_50$vpl))
+pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), 
+      sd = sd(vpl_beta2_50$vpl))
 ```
 
 ```
-## [1] 0.1667328
+## [1] 0.1657139
 ```
 
 #### Independência Total
@@ -750,7 +798,8 @@ Ou teoricamente, através da função densidade de probabilidade normal, com os 
 
 
 ```r
-pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vpl))
+pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), 
+      sd = sd(vpl_beta2$vpl))
 ```
 
 ```
@@ -760,7 +809,7 @@ pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vp
 #### Gráficos
 
 <div class="figure" style="text-align: center">
-<img src="images/histogramasbeta-1.png" alt="Gráficos -- Distribuição \emph{a priori}: Beta 2" width="0.7\linewidth" />
+<img src="images/histogramasbeta-1.png" alt="Gráficos -- Distribuição \emph{a priori}: Beta 2" width="70%" />
 <p class="caption">Gráficos -- Distribuição \emph{a priori}: Beta 2</p>
 </div>
 
@@ -795,7 +844,7 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 ```
 
 <div class="figure" style="text-align: center">
-<img src="images/histbeta7-1.png" alt="Gráfico -- Distribuição \emph{a priori}: Beta 7 -- Independência Total" width="0.7\linewidth" />
+<img src="images/histbeta7-1.png" alt="Gráfico -- Distribuição \emph{a priori}: Beta 7 -- Independência Total" width="70%" />
 <p class="caption">Gráfico -- Distribuição \emph{a priori}: Beta 7 -- Independência Total</p>
 </div>
 
@@ -806,10 +855,10 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 |            |      Min.|   1st Qu.|    Median|      Mean|   3rd Qu.|      Max.|
 |:-----------|---------:|---------:|---------:|---------:|---------:|---------:|
 |s_unif_100  | 1.830.675| 2.397.169| 2.977.241| 3.033.769| 3.704.561| 4.363.364|
-|s_unif_50   | 1.866.410| 2.614.612| 3.091.766| 3.070.837| 3.536.131| 4.345.420|
+|s_unif_50   | 1.879.921| 2.626.646| 3.096.904| 3.076.418| 3.538.888| 4.344.195|
 |s_unif      | 1.977.606| 2.777.265| 3.113.936| 3.107.640| 3.441.087| 4.146.205|
 |s_beta2_100 | 1.910.691| 2.658.857| 3.061.174| 3.065.854| 3.519.846| 4.327.316|
-|s_beta2_50  | 1.907.261| 2.749.625| 3.063.516| 3.100.074| 3.452.953| 4.306.794|
+|s_beta2_50  | 1.890.117| 2.752.896| 3.079.547| 3.098.159| 3.459.430| 4.305.635|
 |s_beta2     | 2.219.450| 2.833.522| 3.048.477| 3.073.671| 3.316.966| 4.067.581|
 |s_beta7     | 2.557.123| 2.952.993| 3.091.660| 3.090.242| 3.227.009| 3.677.510|
 
@@ -817,10 +866,10 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 |Distribuição |Dependência   |     Média| Desvio_Padrão|
 |:------------|:-------------|---------:|-------------:|
 |Uniforme     |Total         | 3.033.769|     746.342,7|
-|Uniforme     |Parcial (50%) | 3.070.837|     586.336,8|
+|Uniforme     |Parcial (50%) | 3.076.418|     588.547,3|
 |Uniforme     |Independente  | 3.107.640|     443.892,3|
 |Beta         |Total         | 3.065.854|     556.618,0|
-|Beta         |Parcial (50%) | 3.100.074|     480.802,1|
+|Beta         |Parcial (50%) | 3.098.159|     478.484,1|
 |Beta         |Independente  | 3.073.671|     339.347,8|
 |Beta         |Independente  | 3.090.242|     199.387,6|
 
@@ -830,7 +879,5 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 Como notamos nas últimas seções, o valor médio das simulações pouco se altera com a mudança das distribuições adotadas. No entanto, o desvio-padrão das simulações é alterado drasticamente com a mudança da distribuição ou dos parâmetros adotados para elas.
 
 Pesquisas devem ser feitas no sentido de estimar parâmetros mais precisos de distribuição das variáveis envolvidas.
-
-\newpage
 
 # Referências {-}

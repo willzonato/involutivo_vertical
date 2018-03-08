@@ -52,7 +52,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.path = "cache/",
                       message = FALSE, warning = FALSE, 
                       fig.ext='png', fig.align = "center", 
                       fig.path = "images/", fig.pos = "H",
-                      fig.asp = 1, out.width = "0.7\\linewidth",
+                      fig.asp = 1, out.width = "70%",
                       dpi = 600)
 type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 library(appraiseR)
@@ -148,7 +148,7 @@ O **R** possui uma série de funções para a geração randômica de variáveis
 
 Abaixo mostramos como gerar 10^5 números aleatórios, armazenando-os na variável `v`, e criar um histograma desta variável comparada com a curva de distribuição teórica:
 
-```{r runif, fig.cap = "Simulação de variável com distribuição uniforme"}
+```{r runif, fig.cap = "Simulação de variável com distribuição uniforme", fig.asp = 0.5}
 v <- runif(10^5)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -159,7 +159,7 @@ curve(dunif(x),
 
 O mesmo procedimento pode ser feito para a distribuição normal, onde deve-se definir uma valor para a média (`mean = 10`) e o desvio-padrão (`sd = 2`) dos dados simulados.
 
-```{r rnorm, fig.cap = "Simulação de variável com distribuição normal"}
+```{r rnorm, fig.cap = "Simulação de variável com distribuição normal", fig.asp = 0.5}
 v <- rnorm(10^5, mean = 10, sd = 2)
 hist(v, freq = FALSE)
 curve(dnorm(x, mean = 10, sd = 2), 
@@ -170,7 +170,7 @@ curve(dnorm(x, mean = 10, sd = 2),
 
 Para a geração de variáveis com distribuição beta, basta informa os parâmetros de forma da mesma, através dos argumentos `shape1` e` shape2`:
 
-```{r rbeta1, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 4)"}
+```{r rbeta1, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 4)", fig.asp = 0.5}
 v <- rbeta(10^5, shape1 = 4, shape2 = 4)
 hist(v, freq = FALSE)
 curve(dbeta(x, 4, 4), 
@@ -179,7 +179,7 @@ curve(dbeta(x, 4, 4),
 
 No caso da distribuição beta a escolha dos parâmetros deve ser criteriosa, haja vista que a mesma pode assumir as mais diferentes formas. Por exemplo, a distribuição beta com parâmetros de forma iguais a 1 é equivalente à distribuição uniforme
 
-```{r rbeta2, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 1)"}
+```{r rbeta2, fig.cap = "Simulação de variável com distribuição beta (fatores de forma iguais a 1)", fig.asp = 0.5}
 v <- rbeta(10^5, shape1 = 1, shape2 = 1)
 hist(v, freq = FALSE)
 curve(dunif(x),
@@ -869,7 +869,8 @@ sum(vpl_beta2_100$vpl < 0.85*mean(vpl_beta2_100$vpl))/Nsim
 Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **`r gcomma(m_beta2_100)`** e desvio padrão **`r gcomma(std_beta2_100)`**:
 
 ```{r p85teorica4}
-pnorm(0.85*mean(vpl_beta2_100$vpl), mean = mean(vpl_beta2_100$vpl), sd = sd(vpl_beta2_100$vpl))
+pnorm(0.85*mean(vpl_beta2_100$vpl), mean = mean(vpl_beta2_100$vpl), 
+      sd = sd(vpl_beta2_100$vpl))
 ```
 
 #### Dependência Parcial
@@ -890,7 +891,8 @@ sum(vpl_beta2_50$vpl < 0.85*mean(vpl_beta2_50$vpl))/Nsim
 Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **`r gcomma(m_beta2_50)`** e desvio padrão **`r gcomma(std_beta2_50)`**:
 
 ```{r p85teorica5}
-pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), sd = sd(vpl_beta2_50$vpl))
+pnorm(0.85*mean(vpl_beta2_50$vpl), mean = mean(vpl_beta2_50$vpl), 
+      sd = sd(vpl_beta2_50$vpl))
 ```
 
 #### Independência Total
@@ -911,7 +913,8 @@ sum(vpl_beta2$vpl < 0.85*mean(vpl_beta2$vpl))/Nsim
 Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **`r gcomma(m_beta2)`** e desvio padrão **`r gcomma(std_beta2)`**:
 
 ```{r p85teorica6}
-pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), sd = sd(vpl_beta2$vpl))
+pnorm(0.85*mean(vpl_beta2$vpl), mean = mean(vpl_beta2$vpl), 
+      sd = sd(vpl_beta2$vpl))
 ```
 
 #### Gráficos
