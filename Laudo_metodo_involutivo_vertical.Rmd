@@ -1,6 +1,6 @@
 ---
-title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
-subtitle: "Com o uso do R"
+title: "Aplicações da Simulação de Monte Carlo com o Método Involutivo Vertical"
+subtitle: "Com diversas distribuições à priori"
 author: 
 - "Luiz Fernando Palin Droubi"
 - "Willian Zonato"
