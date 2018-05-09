@@ -1,10 +1,10 @@
 ---
-title: "Avaliação de um lote urbano pelo Método Involutivo Vertical"
-subtitle: "Com o uso do R"
+title: "Aplicações da Simulação de Monte Carlo com o Método Involutivo Vertical"
+subtitle: "Com diversas distribuições à priori"
 author: 
 - "Luiz Fernando Palin Droubi"
 - "Willian Zonato"
-date: "08/03/2018"
+date: "09/05/2018"
 output:
   html_document:
     fig_caption: yes
@@ -23,29 +23,29 @@ classoption: a4paper
 params:
   Nsim: 500
   ap_andar: 4
-  area_terreno: 500
-  bdi_c: 31.46
-  bdi_i: 23.52
-  c_ref: 1.2
-  cor: 5
-  cub: 1553.57
-  ia: 2.5
+  area_terreno: 630 #m2
+  bdi_c: 31.46 #%
+  bdi_i: 23.52 #%
+  c_ref: 1.2 #%
+  cor: 5 #% (corretagem)
+  cub: 1553.57 #R$/m2
+  ia: 2.5 # índice de aproveitamento
   p_beta: [2, 2]
   pavs: 5
   periodo: a.b.
   prior_dist: runif
-  range_bdi_c: [90, 110]
-  range_bdi_i: [90, 110]
-  range_custos: [90, 110]
-  range_tma: [1.2, 2.6]
-  range_vgv: [90, 110]
-  rf_rate: 1.2
-  taxa_risco: 0.7
-  valor_venda: 7000.0
-  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84]
-  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  range_bdi_c: [90, 110] #%
+  range_bdi_i: [90, 110] #%
+  range_custos: [90, 110] #%
+  range_tma: [1.2, 2.6] #%
+  range_vgv: [90, 110] #%
+  rf_rate: 1.2 #% a.b
+  taxa_risco: 0.7 #% a.b
+  valor_venda: 7000.0 #R$/m2 de área construída
+  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84] # Fluxo de Financeiro de Construção (%)
+  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2] # Fluxo de vendas (unidades)
+  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] # Fluxo de vendas (unidades)
+  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # Fluxo de vendas (unidades)
 ---
 
 
@@ -287,13 +287,13 @@ Uma versão personalizada deste método com foco na aplicação do Método de Mo
 
 ## Dados Preliminares
 
-Trata-se de avaliar pelo método involutivo um terreno com área de 500 m^2, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é 2.5), pode-se construir 20 apartamentos com área total de 75 m^2 cada um, num prédio de 6 pisos (5 + 1). 
+Trata-se de avaliar pelo método involutivo um terreno com área de 630 $m^2$, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é 2.5), pode-se construir 20 apartamentos com área total de 94.5 $m^2$ cada um, num prédio de 6 pisos (5 + 1). 
 
 ## Previsão de Receitas ou Valor Global de Vendas (VGV) e velocidade de vendas
 
 O Produto Geral de Vendas (Pgv) ou Valor Global de Vendas (VGV) é o Produto de vendas total do empreendimento hipotético.
 
-O preço de venda praticado pelo mercado na região do imóvel é de R\$ 7.000,00/ m^2, o que gera um vgv de R\$ 10.500.000,00. 
+O preço de venda praticado pelo mercado na região do imóvel é de R\$ 7.000,00/ $m^2$, o que gera um vgv de R\$ 13.230.000,00. 
 
 Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 
@@ -305,7 +305,7 @@ Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 
 ## Custos de Construção e Cronograma Financeiro
 
-Estima-se que o custo de construção seja 120\% do CUB R8N, que no momento é de R\$ 1.553,57/ m^2, de maneira então que o custo de referência será de R\$ 1.864,28/ m^2, totalizando R\$ 2.796.426,00. 
+Estima-se que o custo de construção seja 120\% do CUB R8N, que no momento é de R\$ 1.553,57/ $m^2$, de maneira então que o custo de referência será de R\$ 1.864,28/ $m^2$, totalizando R\$ 3.523.496,76. 
 
 O cronograma financeiro da construção foi estimado bimestralmente como mostrado a baixo:
 
@@ -324,28 +324,28 @@ A taxa mínima de atratividade do empreendimento foi calculada levando em consid
 O Fluxo de Caixa do Empreendimento pode ser visto abaixo:
 
 
-| Periodo|       FCV|        FCI| Corretagem| BDI_Incorporador|         FCL| fator_VP| FCL_descontado|
-|-------:|---------:|----------:|----------:|----------------:|-----------:|--------:|--------------:|
-|       0|         0| -208.439,5|          0|                0| -208.439,50|     1,00|    -208.439,50|
-|       1|         0| -243.730,8|          0|                0| -243.730,84|     0,98|    -239.166,59|
-|       2|   525.000| -266.155,5|    -26.250|         -123.480|  109.114,45|     0,96|     105.066,03|
-|       3|   525.000| -277.551,7|    -26.250|         -123.480|   97.718,29|     0,94|      92.330,65|
-|       4|   525.000| -395.557,1|    -26.250|         -123.480|  -20.287,14|     0,93|     -18.809,66|
-|       5|   525.000| -487.461,7|    -26.250|         -123.480| -112.191,68|     0,91|    -102.072,97|
-|       6| 1.050.000| -541.133,9|    -52.500|         -246.960|  209.406,07|     0,89|     186.951,67|
-|       7| 1.050.000| -483.785,5|    -52.500|         -246.960|  266.754,50|     0,88|     233.690,94|
-|       8| 1.050.000| -521.282,5|    -52.500|         -246.960|  229.257,45|     0,86|     197.080,47|
-|       9| 1.050.000| -251.450,8|    -52.500|         -246.960|  499.089,18|     0,84|     421.006,02|
-|      10| 1.050.000|        0,0|    -52.500|         -246.960|  750.540,00|     0,83|     621.260,89|
-|      11| 1.050.000|        0,0|    -52.500|         -246.960|  750.540,00|     0,81|     609.626,77|
-|      12| 1.050.000|        0,0|    -52.500|         -246.960|  750.540,00|     0,80|     598.210,52|
-|      13| 1.050.000|        0,0|    -52.500|         -246.960|  750.540,00|     0,78|     587.008,06|
+| Periodo|       FCV|        FCI| Corretagem| BDI_Incorporador|        FCL| fator_VP| FCL_descontado|
+|-------:|---------:|----------:|----------:|----------------:|----------:|--------:|--------------:|
+|       0|         0| -262.633,8|          0|              0,0| -262.633,8|     1,00|    -262.633,77|
+|       1|         0| -307.100,9|          0|              0,0| -307.100,9|     0,98|    -301.349,90|
+|       2|   661.500| -335.356,0|    -33.075|       -155.584,8|  137.484,2|     0,96|     132.383,19|
+|       3|   661.500| -349.715,2|    -33.075|       -155.584,8|  123.125,0|     0,94|     116.336,62|
+|       4|   661.500| -498.402,0|    -33.075|       -155.584,8|  -25.561,8|     0,93|     -23.700,17|
+|       5|   661.500| -614.201,7|    -33.075|       -155.584,8| -141.361,5|     0,91|    -128.611,94|
+|       6| 1.323.000| -681.828,8|    -66.150|       -311.169,6|  263.851,6|     0,89|     235.559,11|
+|       7| 1.323.000| -609.569,7|    -66.150|       -311.169,6|  336.110,7|     0,88|     294.450,58|
+|       8| 1.323.000| -656.816,0|    -66.150|       -311.169,6|  288.864,4|     0,86|     248.321,39|
+|       9| 1.323.000| -316.828,0|    -66.150|       -311.169,6|  628.852,4|     0,84|     530.467,58|
+|      10| 1.323.000|        0,0|    -66.150|       -311.169,6|  945.680,4|     0,83|     782.788,72|
+|      11| 1.323.000|        0,0|    -66.150|       -311.169,6|  945.680,4|     0,81|     768.129,73|
+|      12| 1.323.000|        0,0|    -66.150|       -311.169,6|  945.680,4|     0,80|     753.745,26|
+|      13| 1.323.000|        0,0|    -66.150|       -311.169,6|  945.680,4|     0,78|     739.630,15|
 
 ## Valor Presente Líquido (VPL) Provável
 
 
 
-De acordo com o observado no fluxo de caixa acima, o VPL do empreendimento é a soma da coluna do Fluxo de Caixa Líquido descontado -- da taxa de juros mínima de atratividade, ou seja, o VPL é **R\$ 3.083.743,30**. 
+De acordo com o observado no fluxo de caixa acima, o VPL do empreendimento é a soma da coluna do Fluxo de Caixa Líquido descontado -- da taxa de juros mínima de atratividade, ou seja, o VPL é **R\$ 3.885.516,56**. 
 
 ## Análises de Sensibilidade
 
@@ -356,9 +356,9 @@ Em relação à taxa mínima de atratividade (TMA), a consideraremos variando en
 
 |Situacao   |   TMA|       VPL| Variacao|
 |:----------|-----:|---------:|--------:|
-|Pessimista | 0,026| 2.852.118|   -0,076|
-|Provavel   | 0,019| 3.086.672|    0,000|
-|Otimista   | 0,012| 3.341.070|    0,082|
+|Pessimista | 0,026| 3.593.668|   -0,076|
+|Provavel   | 0,019| 3.889.207|    0,000|
+|Otimista   | 0,012| 4.209.748|    0,082|
 
 ### Sensibilidade em relação ao custo de construção do empreendimento
 
@@ -367,9 +367,9 @@ Em relação ao custo do empreendimento, consideraremos uma variação no custo 
 
 |Situacao   |        CC|       VPL| Variacao|
 |:----------|---------:|---------:|--------:|
-|Pessimista | 2.516.783| 3.418.098|     0,11|
-|Provavel   | 2.796.426| 3.083.743|     0,00|
-|Otimista   | 3.076.069| 2.749.389|    -0,11|
+|Pessimista | 3.171.147| 4.306.803|     0,11|
+|Provavel   | 3.523.497| 3.885.517|     0,00|
+|Otimista   | 3.875.846| 3.464.230|    -0,11|
 
 ### Sensibilidade em relação ao BDI do Construtor
 
@@ -378,9 +378,9 @@ Em relação ao BDI do Construtor, consideraremos uma variação entre 90\% e 11
 
 |Situacao   | BDI_Construtor|       VPL| Variacao|
 |:----------|--------------:|---------:|--------:|
-|Pessimista |           0,35| 3.003.728|    -0,03|
-|Provavel   |           0,31| 3.083.743|     0,00|
-|Otimista   |           0,28| 3.163.758|     0,03|
+|Pessimista |           0,35| 3.784.698|    -0,03|
+|Provavel   |           0,31| 3.885.517|     0,00|
+|Otimista   |           0,28| 3.986.336|     0,03|
 
 ### Sensibilidade em relação ao valor de venda do empreendimento
 
@@ -389,9 +389,9 @@ Em relação às vendas, consideraremos uma variação entre 90\% e 110\% do vgv
 
 |Situacao   |     Vendas|       VPL| Variacao|
 |:----------|----------:|---------:|--------:|
-|Pessimista |  9.450.000| 2.441.015|    -0,21|
-|Provavel   | 10.500.000| 3.083.743|     0,00|
-|Otimista   | 11.550.000| 3.726.472|     0,21|
+|Pessimista | 11.907.000| 3.075.679|    -0,21|
+|Provavel   | 13.230.000| 3.885.517|     0,00|
+|Otimista   | 14.553.000| 4.695.355|     0,21|
 
 
 ### Sensibilidade em relação ao BDI do Incorporador
@@ -401,9 +401,9 @@ Em relação ao BDI do Incorporador, consideraremos uma variação entre 90~\% e
 
 |Situacao   | BDI_Incorporador|       VPL| Variacao|
 |:----------|----------------:|---------:|--------:|
-|Pessimista |             0,26| 2.872.258|    -0,07|
-|Provavel   |             0,24| 3.083.743|     0,00|
-|Otimista   |             0,21| 3.295.229|     0,07|
+|Pessimista |             0,26| 3.619.045|    -0,07|
+|Provavel   |             0,24| 3.885.517|     0,00|
+|Otimista   |             0,21| 4.151.988|     0,07|
 
 ## Sensibilidade em relação à velocidade de vendas do empreendimento
 
@@ -436,9 +436,9 @@ Já para o cenário otimista em relação à velocidade de vendas, foi considera
 
 |Situacao   |VV         |       VPL| Variacao|
 |:----------|:----------|---------:|--------:|
-|Pessimista |Pessimista | 2.731.317|    -0,11|
-|Provavel   |Provavel   | 3.083.743|     0,00|
-|Otimista   |Otimista   | 3.303.815|     0,07|
+|Pessimista |Pessimista | 3.441.460|    -0,11|
+|Provavel   |Provavel   | 3.885.517|     0,00|
+|Otimista   |Otimista   | 4.162.806|     0,07|
 
 ### Análise gráfica de sensibilidade
 
@@ -466,28 +466,28 @@ No cenário pessimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se
 
 | Periodo|     FCV|      FCI| Corretagem| BDI_Incorporador|      FCL| fator_VP| FCL_descontado|
 |-------:|-------:|--------:|----------:|----------------:|--------:|--------:|--------------:|
-|       0|       0| -234.770|          0|                0| -234.770|     1,00|       -234.770|
-|       1|       0| -274.520|          0|                0| -274.520|     0,97|       -267.563|
-|       2| 472.500| -299.777|    -23.625|         -122.245|   26.852|     0,95|         25.509|
-|       3| 472.500| -312.613|    -23.625|         -122.245|   14.017|     0,93|         12.978|
-|       4| 472.500| -445.526|    -23.625|         -122.245| -118.896|     0,90|       -107.294|
-|       5| 472.500| -549.040|    -23.625|         -122.245| -222.410|     0,88|       -195.622|
-|       6| 472.500| -609.492|    -23.625|         -122.245| -282.863|     0,86|       -242.489|
-|       7| 472.500| -544.899|    -23.625|         -122.245| -218.270|     0,84|       -182.373|
-|       8| 472.500| -587.133|    -23.625|         -122.245| -260.503|     0,81|       -212.146|
-|       9| 472.500| -283.215|    -23.625|         -122.245|   43.415|     0,79|         34.460|
-|      10| 472.500|        0|    -23.625|         -122.245|  326.630|     0,77|        252.687|
-|      11| 472.500|        0|    -23.625|         -122.245|  326.630|     0,75|        246.283|
-|      12| 472.500|        0|    -23.625|         -122.245|  326.630|     0,73|        240.042|
-|      13| 472.500|        0|    -23.625|         -122.245|  326.630|     0,72|        233.959|
-|      14| 472.500|        0|    -23.625|         -122.245|  326.630|     0,70|        228.030|
-|      15| 472.500|        0|    -23.625|         -122.245|  326.630|     0,68|        222.252|
-|      16| 472.500|        0|    -23.625|         -122.245|  326.630|     0,66|        216.620|
-|      17| 472.500|        0|    -23.625|         -122.245|  326.630|     0,65|        211.130|
-|      18| 472.500|        0|    -23.625|         -122.245|  326.630|     0,63|        205.780|
-|      19| 472.500|        0|    -23.625|         -122.245|  326.630|     0,61|        200.565|
-|      20| 472.500|        0|    -23.625|         -122.245|  326.630|     0,60|        195.483|
-|      21| 472.500|        0|    -23.625|         -122.245|  326.630|     0,58|        190.529|
+|       0|       0| -295.811|          0|                0| -295.811|     1,00|       -295.811|
+|       1|       0| -345.895|          0|                0| -345.895|     0,97|       -337.130|
+|       2| 595.350| -377.720|    -29.768|         -154.029|   33.834|     0,95|         32.141|
+|       3| 595.350| -393.893|    -29.768|         -154.029|   17.661|     0,93|         16.352|
+|       4| 595.350| -561.362|    -29.768|         -154.029| -149.809|     0,90|       -135.191|
+|       5| 595.350| -691.790|    -29.768|         -154.029| -280.237|     0,88|       -246.484|
+|       6| 595.350| -767.960|    -29.768|         -154.029| -356.407|     0,86|       -305.536|
+|       7| 595.350| -686.573|    -29.768|         -154.029| -275.020|     0,84|       -229.791|
+|       8| 595.350| -739.788|    -29.768|         -154.029| -328.234|     0,81|       -267.304|
+|       9| 595.350| -356.851|    -29.768|         -154.029|   54.702|     0,79|         43.419|
+|      10| 595.350|        0|    -29.768|         -154.029|  411.554|     0,77|        318.385|
+|      11| 595.350|        0|    -29.768|         -154.029|  411.554|     0,75|        310.317|
+|      12| 595.350|        0|    -29.768|         -154.029|  411.554|     0,73|        302.453|
+|      13| 595.350|        0|    -29.768|         -154.029|  411.554|     0,72|        294.789|
+|      14| 595.350|        0|    -29.768|         -154.029|  411.554|     0,70|        287.318|
+|      15| 595.350|        0|    -29.768|         -154.029|  411.554|     0,68|        280.037|
+|      16| 595.350|        0|    -29.768|         -154.029|  411.554|     0,66|        272.941|
+|      17| 595.350|        0|    -29.768|         -154.029|  411.554|     0,65|        266.024|
+|      18| 595.350|        0|    -29.768|         -154.029|  411.554|     0,63|        259.283|
+|      19| 595.350|        0|    -29.768|         -154.029|  411.554|     0,61|        252.712|
+|      20| 595.350|        0|    -29.768|         -154.029|  411.554|     0,60|        246.308|
+|      21| 595.350|        0|    -29.768|         -154.029|  411.554|     0,58|        240.067|
 
 ### Cenário Provável
 
@@ -498,20 +498,20 @@ Os resultados para o cenário provável podem ser encontrados em [Fluxo de Caixa
 No cenário otimista, o Fluxo de Caixa de Vendas foi elaborado considerando-se um valor de 110\% do VGV Provável, em conjunto com o fluxo de vendas otimista, como pode ser visto em [Sensibilidade em relação à velocidade de vendas do empreendimento]. Já o Fluxo de Caixa de Investimentos foi calculado considerando-se o valor de 90\% do Custo de Construção Provável e com BDI do Construtor com valor de 90\% do BDI Provável do Construtor. Finalmente, para o Fluxo de Caixa Líquido, foi considerado um valor de 90\% do BDI Provável do Incorporador e uma taxa mínima de atratividade de 1.2\%.
 
 
-| Periodo|       FCV|      FCI| Corretagem| BDI_Incorporador|      FCL| fator_VP| FCL_descontado|
-|-------:|---------:|--------:|----------:|----------------:|--------:|--------:|--------------:|
-|       0|         0| -183.106|          0|                0| -183.106|     1,00|       -183.106|
-|       1|         0| -214.108|          0|                0| -214.108|     0,99|       -211.569|
-|       2| 1.155.000| -233.808|    -57.750|         -244.490|  618.952|     0,98|        604.360|
-|       3| 1.155.000| -243.819|    -57.750|         -244.490|  608.941|     0,96|        587.535|
-|       4| 1.155.000| -347.482|    -57.750|         -244.490|  505.278|     0,95|        481.735|
-|       5| 1.155.000| -428.217|    -57.750|         -244.490|  424.543|     0,94|        399.962|
-|       6| 1.155.000| -475.366|    -57.750|         -244.490|  377.394|     0,93|        351.327|
-|       7| 1.155.000| -424.987|    -57.750|         -244.490|  427.772|     0,92|        393.504|
-|       8| 1.155.000| -457.927|    -57.750|         -244.490|  394.833|     0,91|        358.896|
-|       9| 1.155.000| -220.890|    -57.750|         -244.490|  631.870|     0,90|        567.548|
-|      10| 1.155.000|        0|    -57.750|         -244.490|  852.760|     0,89|        756.870|
-|      11| 1.155.000|        0|    -57.750|         -244.490|  852.760|     0,88|        747.896|
+| Periodo|       FCV|      FCI| Corretagem| BDI_Incorporador|       FCL| fator_VP| FCL_descontado|
+|-------:|---------:|--------:|----------:|----------------:|---------:|--------:|--------------:|
+|       0|         0| -230.714|          0|                0|  -230.714|     1,00|       -230.714|
+|       1|         0| -269.776|          0|                0|  -269.776|     0,99|       -266.577|
+|       2| 1.455.300| -294.597|    -72.765|         -308.058|   779.880|     0,98|        761.494|
+|       3| 1.455.300| -307.211|    -72.765|         -308.058|   767.266|     0,96|        740.294|
+|       4| 1.455.300| -437.827|    -72.765|         -308.058|   636.650|     0,95|        606.986|
+|       5| 1.455.300| -539.553|    -72.765|         -308.058|   534.924|     0,94|        503.953|
+|       6| 1.455.300| -598.961|    -72.765|         -308.058|   475.517|     0,93|        442.672|
+|       7| 1.455.300| -535.484|    -72.765|         -308.058|   538.993|     0,92|        495.815|
+|       8| 1.455.300| -576.988|    -72.765|         -308.058|   497.489|     0,91|        452.209|
+|       9| 1.455.300| -278.321|    -72.765|         -308.058|   796.156|     0,90|        715.111|
+|      10| 1.455.300|        0|    -72.765|         -308.058| 1.074.477|     0,89|        953.657|
+|      11| 1.455.300|        0|    -72.765|         -308.058| 1.074.477|     0,88|        942.348|
 
 ### Valor Presente Líquido dos diversos cenários
 
@@ -521,7 +521,7 @@ vpl_pessimista <- sum(FC_pessimista$FCL_descontado)
 vpl_otimista <- sum(FC_otimista$FCL_descontado)
 ```
 
-O VPL para o cenário mais pessimista é de **R\$ 1.274.048,49** e para o cenário mais otimista, de **R\$ 4.854.959,22**.
+O VPL para o cenário mais pessimista é de **R\$ 1.605.301,10** e para o cenário mais otimista, de **R\$ 6.117.248,62**.
 
 ## Simulações
 
@@ -566,7 +566,7 @@ m_unif100 <- mean(vpl_unif100$vpl)
 std_unif100 <- sd(vpl_unif100$vpl)
 ```
 
-Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.033.769,44. 
+Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.822.549,50. 
 
 A probabilidade que o VPL seja inferior a 85% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
@@ -579,7 +579,7 @@ sum(vpl_unif100$vpl < 0.85*mean(vpl_unif100$vpl))/Nsim
 ## [1] 0.34
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.033.769,44** e desvio padrão **746.342,73**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.822.549,50** e desvio padrão **940.391,85**:
 
 
 ```r
@@ -610,7 +610,7 @@ m_unif50 <- mean(vpl_unif50$vpl)
 std_unif50 <- sd(vpl_unif50$vpl)
 ```
 
-Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.076.418,43. 
+Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.876.287,22. 
 
 A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
@@ -623,7 +623,7 @@ sum(vpl_unif50$vpl < 0.85*mean(vpl_unif50$vpl))/Nsim
 ## [1] 0.244
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.076.418,43** e desvio padrão **588.547,29**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.876.287,22** e desvio padrão **741.569,59**:
 
 
 ```r
@@ -647,7 +647,7 @@ Para a simulação com variáveis totalmente independentes, constrói-se uma mat
 |bdi_c |   0|  0|     0|     1|
 
 
-Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.107.640,50. 
+Baseados nas 500 simulações, o VPL esperado é igual o valor médio das simulações, ou seja, R\$ 3.915.627,03. 
 
 A probabilidade que o VPL seja inferior a 85\% da média pode ser calculado através do número de simulações com valor abaixo deste valor, dividido pelo número de simulações:
 
@@ -660,7 +660,7 @@ sum(vpl_unif$vpl < 0.85*mean(vpl_unif$vpl))/Nsim
 ## [1] 0.168
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.107.640,50** e desvio padrão **443.892,34**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.915.627,03** e desvio padrão **559.304,34**:
 
 
 ```r
@@ -741,7 +741,7 @@ sum(vpl_beta2_100$vpl < 0.85*mean(vpl_beta2_100$vpl))/Nsim
 ## [1] 0.222
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.065.854,04** e desvio padrão **556.617,97**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.862.976,09** e desvio padrão **701.338,64**:
 
 
 ```r
@@ -768,7 +768,7 @@ sum(vpl_beta2_50$vpl < 0.85*mean(vpl_beta2_50$vpl))/Nsim
 ## [1] 0.172
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.098.159,42** e desvio padrão **478.484,08**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.903.680,86** e desvio padrão **602.889,94**:
 
 
 ```r
@@ -795,7 +795,7 @@ sum(vpl_beta2$vpl < 0.85*mean(vpl_beta2$vpl))/Nsim
 ## [1] 0.092
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.073.671,40** e desvio padrão **339.347,82**:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de **3.872.825,97** e desvio padrão **427.578,25**:
 
 
 ```r
@@ -833,7 +833,7 @@ mean(vpl_beta7$vpl < 0.85*mean(vpl_beta7$vpl))
 ## [1] 0.002
 ```
 
-Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de 3.090.242,33 e desvio padrão 199.387,61:
+Ou teoricamente, através da função densidade de probabilidade normal, com os parâmetros iguais aos da simulação, a saber, média de 3.893.705,33 e desvio padrão 251.228,39:
 
 
 ```r
@@ -855,24 +855,24 @@ pnorm(0.85*mean(vpl_beta7$vpl), mean = mean(vpl_beta7$vpl), sd = sd(vpl_beta7$vp
 
 |            |      Min.|   1st Qu.|    Median|      Mean|   3rd Qu.|      Max.|
 |:-----------|---------:|---------:|---------:|---------:|---------:|---------:|
-|s_unif_100  | 1.830.675| 2.397.169| 2.977.241| 3.033.769| 3.704.561| 4.363.364|
-|s_unif_50   | 1.879.921| 2.626.646| 3.096.904| 3.076.418| 3.538.888| 4.344.195|
-|s_unif      | 1.977.606| 2.777.265| 3.113.936| 3.107.640| 3.441.087| 4.146.205|
-|s_beta2_100 | 1.910.691| 2.658.857| 3.061.174| 3.065.854| 3.519.846| 4.327.316|
-|s_beta2_50  | 1.890.117| 2.752.896| 3.079.547| 3.098.159| 3.459.430| 4.305.635|
-|s_beta2     | 2.219.450| 2.833.522| 3.048.477| 3.073.671| 3.316.966| 4.067.581|
-|s_beta7     | 2.557.123| 2.952.993| 3.091.660| 3.090.242| 3.227.009| 3.677.510|
+|s_unif_100  | 2.306.650| 3.020.433| 3.751.324| 3.822.550| 4.667.747| 5.497.838|
+|s_unif_50   | 2.368.700| 3.309.574| 3.902.099| 3.876.287| 4.458.999| 5.473.685|
+|s_unif      | 2.491.783| 3.499.354| 3.923.559| 3.915.627| 4.335.770| 5.224.218|
+|s_beta2_100 | 2.407.471| 3.350.159| 3.857.080| 3.862.976| 4.435.006| 5.452.418|
+|s_beta2_50  | 2.381.548| 3.468.649| 3.880.230| 3.903.681| 4.358.882| 5.425.100|
+|s_beta2     | 2.796.507| 3.570.237| 3.841.081| 3.872.826| 4.179.377| 5.125.152|
+|s_beta7     | 3.221.975| 3.720.771| 3.895.491| 3.893.705| 4.066.031| 4.633.663|
 
 
 |Distribuição |Dependência   |     Média| Desvio_Padrão|
 |:------------|:-------------|---------:|-------------:|
-|Uniforme     |Total         | 3.033.769|     746.342,7|
-|Uniforme     |Parcial (50%) | 3.076.418|     588.547,3|
-|Uniforme     |Independente  | 3.107.640|     443.892,3|
-|Beta         |Total         | 3.065.854|     556.618,0|
-|Beta         |Parcial (50%) | 3.098.159|     478.484,1|
-|Beta         |Independente  | 3.073.671|     339.347,8|
-|Beta         |Independente  | 3.090.242|     199.387,6|
+|Uniforme     |Total         | 3.822.550|     940.391,8|
+|Uniforme     |Parcial (50%) | 3.876.287|     741.569,6|
+|Uniforme     |Independente  | 3.915.627|     559.304,3|
+|Beta         |Total         | 3.862.976|     701.338,6|
+|Beta         |Parcial (50%) | 3.903.681|     602.889,9|
+|Beta         |Independente  | 3.872.826|     427.578,2|
+|Beta         |Independente  | 3.893.705|     251.228,4|
 
 
 # Conclusão

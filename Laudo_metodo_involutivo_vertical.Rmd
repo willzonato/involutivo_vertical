@@ -23,29 +23,29 @@ classoption: a4paper
 params:
   Nsim: 500
   ap_andar: 4
-  area_terreno: 500
-  bdi_c: 31.46
-  bdi_i: 23.52
-  c_ref: 1.2
-  cor: 5
-  cub: 1553.57
-  ia: 2.5
+  area_terreno: 630 #m2
+  bdi_c: 31.46 #%
+  bdi_i: 23.52 #%
+  c_ref: 1.2 #%
+  cor: 5 #% (corretagem)
+  cub: 1553.57 #R$/m2
+  ia: 2.5 # índice de aproveitamento
   p_beta: [2, 2]
   pavs: 5
   periodo: a.b.
   prior_dist: runif
-  range_bdi_c: [90, 110]
-  range_bdi_i: [90, 110]
-  range_custos: [90, 110]
-  range_tma: [1.2, 2.6]
-  range_vgv: [90, 110]
-  rf_rate: 1.2
-  taxa_risco: 0.7
-  valor_venda: 7000.0
-  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84]
-  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
-  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  range_bdi_c: [90, 110] #%
+  range_bdi_i: [90, 110] #%
+  range_custos: [90, 110] #%
+  range_tma: [1.2, 2.6] #%
+  range_vgv: [90, 110] #%
+  rf_rate: 1.2 #% a.b
+  taxa_risco: 0.7 #% a.b
+  valor_venda: 7000.0 #R$/m2 de área construída
+  wc: [5.67, 6.63, 7.24, 7.55, 10.76, 13.26, 14.72, 13.16, 14.18, 6.84] # Fluxo de Financeiro de Construção (%)
+  wv: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2] # Fluxo de vendas (unidades)
+  wv_otimista: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] # Fluxo de vendas (unidades)
+  wv_pessimista: [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # Fluxo de vendas (unidades)
 ---
 
 ```{r setup, include = FALSE}
@@ -304,13 +304,13 @@ Uma versão personalizada deste método com foco na aplicação do Método de Mo
 
 ## Dados Preliminares
 
-Trata-se de avaliar pelo método involutivo um terreno com área de `r area_terreno` m^2, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é `r ia`), pode-se construir `r pavs*ap_andar` apartamentos com área total de `r area_construida/(pavs*ap_andar)` m^2 cada um, num prédio de `r pavs+1` pisos (`r pavs` + 1). 
+Trata-se de avaliar pelo método involutivo um terreno com área de `r area_terreno` $m^2$, cujos estudos de mercado indicam que o melhor aproveitamento para este terreno é a construção de um prédio residencial. Considerando-se o máximo aproveitamento possível (o índice de aproveitamento do terreno é `r ia`), pode-se construir `r pavs*ap_andar` apartamentos com área total de `r area_construida/(pavs*ap_andar)` $m^2$ cada um, num prédio de `r pavs+1` pisos (`r pavs` + 1). 
 
 ## Previsão de Receitas ou Valor Global de Vendas (VGV) e velocidade de vendas
 
 O Produto Geral de Vendas (Pgv) ou Valor Global de Vendas (VGV) é o Produto de vendas total do empreendimento hipotético.
 
-O preço de venda praticado pelo mercado na região do imóvel é de `r reais(valor_venda)`/ m^2, o que gera um vgv de `r reais(vgv)`. 
+O preço de venda praticado pelo mercado na região do imóvel é de `r reais(valor_venda)`/ $m^2$, o que gera um vgv de `r reais(vgv)`. 
 
 Já o cronograma de venda foi estimado bimestralmente como mostrado abaixo:
 
@@ -326,7 +326,7 @@ t(WV) %>% kable(format = ifelse(type == "html", "markdown", type),
 
 ## Custos de Construção e Cronograma Financeiro
 
-Estima-se que o custo de construção seja `r 100*c_ref`\% do CUB R8N, que no momento é de `r reais(cub)`/ m^2, de maneira então que o custo de referência será de `r reais(1.2*cub)`/ m^2, totalizando `r reais(cc)`. 
+Estima-se que o custo de construção seja `r 100*c_ref`\% do CUB R8N, que no momento é de `r reais(cub)`/ $m^2$, de maneira então que o custo de referência será de `r reais(1.2*cub)`/ $m^2$, totalizando `r reais(cc)`. 
 
 O cronograma financeiro da construção foi estimado bimestralmente como mostrado a baixo:
 
